@@ -1,0 +1,2 @@
+include ':sample', ':rx-property-kotlin', ':rx-property-setter'
+include ':rx-property'

@@ -80,7 +80,7 @@ Finally, execute data binding in your activity.
 
 ```
 
-YouÅfre done!
+You are done!
 
 ```
 Important Note: These snippets skips resource management/error handling for simplicity.
@@ -102,6 +102,24 @@ class ViewModel {
     val command = output.asObservable()
             .map { !it.isNullOrEmpty() }
             .toRxCommand(View.OnClickListener { input.value = "clicked!" })
+}
+```
+
+## Installation
+
+```
+repositories {
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    compile 'com.github.k-kagurazaka.rx-property-android:rx-property:1.0.0'
+
+    // If you want to use two-way binding
+    compile 'com.github.k-kagurazaka.rx-property-android:rx-property-setter:1.0.0'
+
+    // If you want to use Kotlin syntax
+    compile 'com.github.k-kagurazaka.rx-property-android:rx-property-kotlin:1.0.0'
 }
 ```
 

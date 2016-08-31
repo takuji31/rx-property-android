@@ -52,7 +52,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:24.2.0'
 
     compile project(':rx-property')
-    compile project(':rx-property-setter')
     compile project(':rx-property-kotlin')
 
     testCompile 'junit:junit:4.12'

@@ -1,17 +1,12 @@
 package jp.keita.kagurazaka.rxproperty.sample
 
-import android.view.View
-import jp.keita.kagurazaka.rxproperty.ReadOnlyRxProperty
 import jp.keita.kagurazaka.rxproperty.RxCommand
 import jp.keita.kagurazaka.rxproperty.RxProperty
 import rx.Subscription
 import rx.subscriptions.CompositeSubscription
+import java.util.*
 
-abstract class ViewModel : Subscription {
-    abstract val input: RxProperty<String>
-    abstract val output: ReadOnlyRxProperty<String>
-    abstract val command: RxCommand<View.OnClickListener>
-
+abstract class ViewModelBase : Subscription {
     private val subscriptions = CompositeSubscription()
 
     override fun unsubscribe() {
@@ -24,14 +19,18 @@ abstract class ViewModel : Subscription {
         return subscriptions.isUnsubscribed
     }
 
-    // for JavaViewModel
+    // for JavaBasicsViewModel
     protected fun addSubscriptions(vararg subscriptions: Subscription) {
         for (s in subscriptions) {
             this.subscriptions.add(s)
         }
     }
 
-    // for KotlinViewModel
+    // for KotlinBasicsViewModel
+    protected fun Subscription.asManaged() {
+        subscriptions.add(this)
+    }
+
     protected fun <T> RxProperty<T>.asManaged(): RxProperty<T> {
         subscriptions.add(this)
         return this
@@ -40,5 +39,11 @@ abstract class ViewModel : Subscription {
     protected fun <T> RxCommand<T>.asManaged(): RxCommand<T> {
         subscriptions.add(this)
         return this
+    }
+
+    companion object {
+        @JvmStatic
+        val DISABLE_RAISE_ON_SUBSCRIBE: EnumSet<RxProperty.Mode>
+                = EnumSet.of(RxProperty.Mode.DISTINCT_UNTIL_CHANGED)
     }
 }

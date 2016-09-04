@@ -6,15 +6,35 @@ This library is an Android port of [ReactiveProperty](https://github.com/runceel
 
 ![Demo](images/demo.gif)
 
-## Usage
 
-First, declare a view model class.
+## Download
+
+```groovy
+repositories {
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    compile 'com.github.k-kagurazaka.rx-property-android:rx-property:2.0.0'
+
+    // If you want to use Kotlin syntax
+    compile 'com.github.k-kagurazaka.rx-property-android:rx-property-kotlin:2.0.0'
+}
+```
+
+
+## Basics Usage
+
+First, declare a view model class with `RxProperty` and `RxCommand`.
+
+`RxProperty` represents a variable of a view state and `RxCommand` represents a command of "Command Pattern",
+which is abstraction of user manipulation.
 
 ```java
 public class ViewModel {
   public final RxProperty<String> input;
   public final ReadOnlyRxProperty<String> output;
-  public final RxCommand<View.OnClickListener> command;
+  public final RxCommand<Void> command;
 
   public JavaViewModel() {
     input = new RxProperty<>("");
@@ -24,15 +44,13 @@ public class ViewModel {
             .map(it -> it == null ? "" : it.toUpperCase())
     );
 
-    command = new RxCommand<>(
-        output.asObservable()
-            .map(it -> !TextUtils.isEmpty(it)),
-        view -> { input.setValue("clicked"); }
-    );
+    command = new RxCommand<>(input.onHasErrorsChanged().map(it -> !it));
+    command.subscribe(it -> { input.set("clicked!"); });
   }
 ```
 
 Next, write a layout XML to bind the view model.
+Both one-way (by `@{}`) and two-way (by `@={}`) binding are supported.
 
 ```xml
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -50,20 +68,18 @@ Next, write a layout XML to bind the view model.
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
-            android:text="@{viewModel.input.get}"
-            app:text="@{viewModel.input.set}" />
+            android:text="@={viewModel.input.value}" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@{viewModel.output.get}" />
+            android:text="@{viewModel.output.value}" />
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:enabled="@{viewModel.command.enabled}"
-            android:onClickListener="@{viewModel.command.exec}"
-            android:text="Is not empty?" />
+            android:text="Is not empty?"
+            app:rxCommandOnClick="@{viewModel.command}" />
     </LinearLayout>
 </layout>
 ```
@@ -84,8 +100,48 @@ You are done!
 
 ```
 Important Note: These snippets skips resource management/error handling for simplicity.
-
 ```
+
+
+## Validation
+
+`RxProperty` provides validation. To use this feature, simply call `setValidator` method after `RxProperty` created.
+
+```java
+public final RxProperty<String> input = new RxProperty<>("")
+        .setValidator(it -> TextUtils.isEmpty(it)) ? "Text must not be empty!" : null)
+```
+
+`RxProperty` also supports error notification with `TextInputLayout`.
+
+```xml
+<android.support.design.widget.TextInputLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:error="@{viewModel.input.error}"
+    app:errorEnabled="@{viewModel.input.hasError}">
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:text="@={viewModel.input.value}"/>
+</android.support.design.widget.TextInputLayout>
+```
+
+
+## `RxCommand` with Trigger
+
+By default, the library provides the only `View#onClick` binder for `RxCommand`. If you want to bind `RxCommand` to others view events,
+implement `BindingAdapter` for your desired events or use trigger binding.
+
+`RxCommand` can be kicked by `Observable` by the `bindTrigger` method. [RxBinding](https://github.com/JakeWharton/RxBinding) is match for the use.
+
+```java
+// When the menu whose id is R.id.some_menu is selecetd, someMenuCommand executes
+viewModel.someMenuCommand.bindTrigger(RxMenuItem.clicks(menu.findItem(R.id.some_menu)));
+```
+
 
 ## Kotlin Support
 
@@ -99,29 +155,16 @@ class ViewModel {
             .map { it?.toUpperCase() ?: "" }
             .toRxProperty()
 
-    val command = output.asObservable()
-            .map { !it.isNullOrEmpty() }
-            .toRxCommand(View.OnClickListener { input.value = "clicked!" })
+    val command = input.onHasErrorsChanged()
+            .map { !it }
+            .toRxCommand<Void>()
+    
+    init {
+        command.subscribe { input.set("clicked!") }
+    }
 }
 ```
 
-## Installation
-
-```
-repositories {
-    maven { url "https://jitpack.io" }
-}
-
-dependencies {
-    compile 'com.github.k-kagurazaka.rx-property-android:rx-property:1.0.0'
-
-    // If you want to use two-way binding
-    compile 'com.github.k-kagurazaka.rx-property-android:rx-property-setter:1.0.0'
-
-    // If you want to use Kotlin syntax
-    compile 'com.github.k-kagurazaka.rx-property-android:rx-property-kotlin:1.0.0'
-}
-```
 
 ## License
 

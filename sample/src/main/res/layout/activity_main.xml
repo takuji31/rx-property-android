@@ -1,44 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
         <variable
             name="viewModel"
-            type="jp.keita.kagurazaka.rxproperty.sample.ViewModel" />
+            type="jp.keita.kagurazaka.rxproperty.sample.MainViewModel"/>
     </data>
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/activity_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:paddingBottom="@dimen/activity_vertical_margin"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin"
         tools:context="jp.keita.kagurazaka.rxproperty.sample.MainActivity">
 
-        <EditText
-            android:id="@+id/inputText"
+        <Space
+            android:id="@+id/space_center"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:text="@{viewModel.input.get}"
-            app:text="@{viewModel.input.set}" />
-
-        <TextView
-            android:id="@+id/outputText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@{viewModel.output.get}" />
+            android:layout_height="0dip"
+            android:layout_centerInParent="true"/>
 
         <Button
+            android:id="@+id/button_go_to_basics"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:enabled="@{viewModel.command.enabled}"
-            android:onClickListener="@{viewModel.command.exec}"
-            android:text="Is not empty?" />
-    </LinearLayout>
+            android:layout_above="@id/space_center"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:text="Basics"
+            app:rxCommandOnClick="@{viewModel.goToBasicsCommand}"/>
+
+        <Button
+            android:id="@+id/button_go_to_todo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/space_center"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:enabled="@{viewModel.goToTodoCommand.enabled}"
+            android:text="Todo App"/>
+    </RelativeLayout>
 </layout>

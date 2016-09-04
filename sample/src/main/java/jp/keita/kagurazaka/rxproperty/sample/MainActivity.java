@@ -4,27 +4,29 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.jakewharton.rxbinding.view.RxView;
+
 import jp.keita.kagurazaka.rxproperty.sample.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
+    private MainViewModel viewModel;
 
-  private ViewModel viewModel;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
+        viewModel = new MainViewModel(this);
+        ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
-    // Switchable!
-    viewModel = new JavaViewModel();
-    // viewModel = new KotlinViewModel();
+        // You can bind trigger observable instead of using "rxCommandOnClick" on layout xml.
+        viewModel.goToTodoCommand.bindTrigger(RxView.clicks(binding.buttonGoToTodo));
 
-    ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-    binding.setViewModel(viewModel);
-  }
+        binding.setViewModel(viewModel);
+    }
 
-  @Override
-  protected void onDestroy() {
-    viewModel.unsubscribe();
-    super.onDestroy();
-  }
+    @Override
+    protected void onDestroy() {
+        viewModel.unsubscribe();
+        super.onDestroy();
+    }
 }

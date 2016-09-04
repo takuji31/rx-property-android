@@ -37,7 +37,8 @@ public class ViewModel {
   public final RxCommand<Void> command;
 
   public JavaViewModel() {
-    input = new RxProperty<>("");
+    input = new RxProperty<>("")
+        .setValidator(it -> TextUtils.isEmpty(it) ? "Text must not be empty!" : null);
 
     output = new RxProperty<>(
         input.asObservable()
@@ -109,7 +110,7 @@ Important Note: These snippets skips resource management/error handling for simp
 
 ```java
 public final RxProperty<String> input = new RxProperty<>("")
-        .setValidator(it -> TextUtils.isEmpty(it)) ? "Text must not be empty!" : null)
+        .setValidator(it -> TextUtils.isEmpty(it) ? "Text must not be empty!" : null);
 ```
 
 `RxProperty` also supports error notification with `TextInputLayout`.
@@ -150,6 +151,7 @@ There are some useful extension methods in `rx-property-kotlin'.
 ```kotlin
 class ViewModel {
     val input = RxProperty("")
+            .setValidator { if (TextUtils.isEmpty(it)) "Text must not be empty!" else null }
 
     val output = input.asObservable()
             .map { it?.toUpperCase() ?: "" }

@@ -144,11 +144,27 @@ viewModel.someMenuCommand.bindTrigger(RxMenuItem.clicks(menu.findItem(R.id.some_
 ```
 
 
+## Create from `android.databinding.Observable`
+
+If you already have a `android.databinding.Observable` based view model, you can use a converter from the view model into `rx.Observable`.
+The library provides a feature to convert from `rx.Observable` to `RxProperty`, so you easily create `RxProperty` from the view model.
+
+```java
+class Person extends BaseObservable { ... }
+
+Person person = new Person("John", "Smith");
+Observable<String> firstNameChanged = Observe.propertyOf(person, BR.firstName, it -> it.getFirstName());
+RxProperty<String> firstName = new RxProperty<>(firstNameChanged, person.getFirstName());
+```
+
+
 ## Kotlin Support
 
 There are some useful extension methods in `rx-property-kotlin'.
 
 ```kotlin
+class Person : BaseObservable { ... }
+
 class ViewModel {
     val input = RxProperty("")
             .setValidator { if (TextUtils.isEmpty(it)) "Text must not be empty!" else null }
@@ -160,7 +176,11 @@ class ViewModel {
     val command = input.onHasErrorsChanged()
             .map { !it }
             .toRxCommand<Void>()
-    
+
+    val person = Person("John", "Smith")
+    val firstName = person.observeProperty(BR.firstName) { it.firstName }
+            .toRxProperty()
+
     init {
         command.subscribe { input.set("clicked!") }
     }

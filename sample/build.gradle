@@ -1,13 +1,12 @@
 buildscript {
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.3'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.3'
+        classpath 'com.android.tools.build:gradle:2.2.0'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.4'
     }
 }
 
 repositories {
     mavenCentral()
-    maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
 }
 
 apply plugin: 'com.android.application'
@@ -15,7 +14,7 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "23.0.3"
+    buildToolsVersion "24.0.2"
 
     defaultConfig {
         applicationId "jp.keita.kagurazaka.rxproperty.sample"
@@ -56,9 +55,9 @@ dependencies {
 
     kapt 'com.android.databinding:compiler:2.1.3'
 
-    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.4-eap-100'
-    compile 'com.android.support:appcompat-v7:24.2.0'
-    compile 'com.android.support:design:24.2.0'
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.4'
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:design:24.2.1'
 
     compile 'com.jakewharton.rxbinding:rxbinding:0.4.0'
     compile 'me.tatarka.bindingcollectionadapter:bindingcollectionadapter:1.3.0'

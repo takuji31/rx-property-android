@@ -1,12 +1,12 @@
 ext {
-    androidPlugin = 'com.android.tools.build:gradle:2.1.3'
+    androidPlugin = 'com.android.tools.build:gradle:2.2.0'
     androidMavenGradlePlugin = 'com.github.dcendents:android-maven-gradle-plugin:1.5'
     minSdkVersion = 15
     compileSdkVersion = 24
-    buildToolsVersion = '23.0.3'
+    buildToolsVersion = '24.0.2'
 
-    kotlinPlugin = 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.3'
-    kotlinStdlib = 'org.jetbrains.kotlin:kotlin-stdlib:1.0.3'
+    kotlinPlugin = 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.4'
+    kotlinStdlib = 'org.jetbrains.kotlin:kotlin-stdlib:1.0.4'
 
     rxJava = 'io.reactivex:rxjava:1.1.9'
     rxAndroid = 'io.reactivex:rxandroid:1.2.1'

@@ -1,44 +1,33 @@
 package jp.keita.kagurazaka.rxproperty.sample
 
-import jp.keita.kagurazaka.rxproperty.RxCommand
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import jp.keita.kagurazaka.rxproperty.RxProperty
-import rx.Subscription
-import rx.subscriptions.CompositeSubscription
 import java.util.*
 
-abstract class ViewModelBase : Subscription {
-    private val subscriptions = CompositeSubscription()
+abstract class ViewModelBase : Disposable {
+    protected val disposables = CompositeDisposable()
 
-    override fun unsubscribe() {
-        if (!isUnsubscribed) {
-            subscriptions.unsubscribe()
+    override fun dispose() {
+        if (!isDisposed) {
+            disposables.clear()
         }
     }
 
-    override fun isUnsubscribed(): Boolean {
-        return subscriptions.isUnsubscribed
+    override fun isDisposed(): Boolean {
+        return disposables.isDisposed
     }
 
     // for JavaBasicsViewModel
-    protected fun addSubscriptions(vararg subscriptions: Subscription) {
-        for (s in subscriptions) {
-            this.subscriptions.add(s)
+    protected fun addDisposables(vararg disposables: Disposable) {
+        for (s in disposables) {
+            this.disposables.add(s)
         }
     }
 
     // for KotlinBasicsViewModel
-    protected fun Subscription.asManaged() {
-        subscriptions.add(this)
-    }
-
-    protected fun <T> RxProperty<T>.asManaged(): RxProperty<T> {
-        subscriptions.add(this)
-        return this
-    }
-
-    protected fun <T> RxCommand<T>.asManaged(): RxCommand<T> {
-        subscriptions.add(this)
-        return this
+    inline fun <reified T : Disposable> T.asManaged(): T = this.apply {
+        disposables.add(this)
     }
 
     companion object {

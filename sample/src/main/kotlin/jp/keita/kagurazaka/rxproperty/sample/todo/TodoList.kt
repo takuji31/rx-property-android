@@ -5,11 +5,11 @@ import android.databinding.ObservableArrayList
 class TodoList : ObservableArrayList<TodoItemViewModel>() {
     fun replace(list: List<TodoItem>) {
         clear()
-        addAll(list.map { TodoItemViewModel(it) })
+        addAll(list.map(::TodoItemViewModel))
     }
 
     override fun clear() {
-        forEach { it.unsubscribe() }
+        forEach { it.dispose() }
         super.clear()
     }
 }

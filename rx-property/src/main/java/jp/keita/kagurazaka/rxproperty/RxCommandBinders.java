@@ -4,11 +4,12 @@ import android.databinding.BindingAdapter;
 import android.databinding.Observable;
 import android.view.View;
 
-import rx.functions.Action0;
+import io.reactivex.functions.Cancellable;
 
-public class RxCommandBinders {
+@SuppressWarnings("deprecation")
+public final class RxCommandBinders {
     @BindingAdapter("rxCommandOnClick")
-    public static void setOnClick(final View view, final RxCommand<Void> command) {
+    public static void setOnClick(final View view, final RxCommand<Nothing> command) {
         // Set initial state.
         view.setEnabled(command.canExecute());
 
@@ -17,7 +18,7 @@ public class RxCommandBinders {
             @Override
             public void onClick(View v) {
                 if (command.canExecute()) {
-                    command.execute(null);
+                    command.execute(Nothing.INSTANCE);
                 }
             }
         });
@@ -31,9 +32,9 @@ public class RxCommandBinders {
         };
         command.getEnabled().addOnPropertyChangedCallback(callback);
 
-        command.setUnbindView(new Action0() {
+        command.setCancellable(new Cancellable() {
             @Override
-            public void call() {
+            public void cancel() throws Exception {
                 command.getEnabled().removeOnPropertyChangedCallback(callback);
             }
         });

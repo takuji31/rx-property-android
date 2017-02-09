@@ -4,55 +4,56 @@ import android.text.TextUtils;
 
 import org.jetbrains.annotations.NotNull;
 
+import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import jp.keita.kagurazaka.rxproperty.Nothing;
 import jp.keita.kagurazaka.rxproperty.ReadOnlyRxProperty;
 import jp.keita.kagurazaka.rxproperty.RxCommand;
 import jp.keita.kagurazaka.rxproperty.RxProperty;
-import rx.Observable;
-import rx.Subscription;
-import rx.functions.Action1;
-import rx.functions.Func1;
 
 public class JavaBasicsViewModel extends BasicsViewModel {
     private final RxProperty<String> input;
     private final ReadOnlyRxProperty<String> output;
-    private final RxCommand<Void> command;
+    private final RxCommand<Nothing> command;
 
     public JavaBasicsViewModel() {
         input = new RxProperty<>("")
-                .setValidator(new Func1<String, String>() {
+                .setValidator(new Function<String, String>() {
                     @Override
-                    public String call(String it) {
+                    public String apply(String it) {
                         return (TextUtils.isEmpty(it)) ? "Text must not be empty!" : null;
                     }
                 }, false);
 
-        output = new RxProperty<>(
-                input.asObservable().map(new Func1<String, String>() {
+        output = new ReadOnlyRxProperty<>(
+                input.map(new Function<String, String>() {
                     @Override
-                    public String call(String it) {
+                    public String apply(String it) {
                         return it == null ? "" : it.toUpperCase();
                     }
                 })
         );
 
         final Observable<Boolean> inputHasNoErrorsStream = input.onHasErrorsChanged()
-                .map(new Func1<Boolean, Boolean>() {
+                .map(new Function<Boolean, Boolean>() {
                     @Override
-                    public Boolean call(Boolean hasError) {
+                    public Boolean apply(Boolean hasError) {
                         return !hasError;
                     }
                 })
                 .skip(1);
         command = new RxCommand<>(inputHasNoErrorsStream, false);
-        final Subscription commandSubscription = command.asObservable()
-                .subscribe(new Action1<Void>() {
-                    @Override
-                    public void call(Void aVoid) {
-                        input.set("clicked!");
-                    }
-                });
 
-        addSubscriptions(input, output, command, commandSubscription);
+        final Disposable commandDisposable = command.subscribe(new Consumer<Nothing>() {
+            @Override
+            public void accept(Nothing value) {
+                input.set("clicked!");
+            }
+        });
+
+        addDisposables(input, output, command, commandDisposable);
     }
 
     @NotNull
@@ -69,7 +70,7 @@ public class JavaBasicsViewModel extends BasicsViewModel {
 
     @NotNull
     @Override
-    public RxCommand<Void> getCommand() {
+    public RxCommand<Nothing> getCommand() {
         return command;
     }
 }

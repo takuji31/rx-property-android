@@ -6,12 +6,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
 
+import io.reactivex.functions.Cancellable;
 import jp.keita.kagurazaka.rxproperty.RxProperty;
-import rx.functions.Action0;
 
 /**
  * Sample implementation of {@link BindingAdapter} for {@link RxProperty}.
  */
+@SuppressWarnings("deprecation")
 public class RxPropertyBinders {
     @BindingAdapter("rxPropertySelectedItemIndex")
     public static void setSelectedItemIndex(final Spinner spinner, final RxProperty<Integer> property) {
@@ -24,7 +25,7 @@ public class RxPropertyBinders {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                property.setWithoutViewUpdate(null);
+                property.setWithoutViewUpdate(-1);
             }
         });
 
@@ -39,9 +40,9 @@ public class RxPropertyBinders {
             }
         };
         property.getValue().addOnPropertyChangedCallback(callback);
-        property.setUnbindView(new Action0() {
+        property.setCancellable(new Cancellable() {
             @Override
-            public void call() {
+            public void cancel() throws Exception {
                 property.getValue().removeOnPropertyChangedCallback(callback);
             }
         });

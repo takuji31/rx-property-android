@@ -1,8 +1,8 @@
 package jp.keita.kagurazaka.rxproperty.sample.todo
 
+import io.reactivex.Observable
 import jp.keita.kagurazaka.rxproperty.RxProperty
 import jp.keita.kagurazaka.rxproperty.sample.ViewModelBase
-import rx.Observable
 
 class TodoItemViewModel constructor(
         val model: TodoItem = TodoItem(false, "")
@@ -20,15 +20,13 @@ class TodoItemViewModel constructor(
         get() = title.onHasErrorsChanged()
 
     init {
-        isDone.asObservable()
-                .subscribe {
-                    model.isDone = it
-                    TodoRepository.update(model)
-                }.asManaged()
+        isDone.subscribe {
+            model.isDone = it
+            TodoRepository.update(model)
+        }.asManaged()
 
-        title.asObservable()
-                .subscribe {
-                    model.title = it ?: ""
-                }.asManaged()
+        title.subscribe {
+            model.title = it ?: ""
+        }.asManaged()
     }
 }

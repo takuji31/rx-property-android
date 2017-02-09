@@ -24,7 +24,7 @@ public class BasicsActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        viewModel.unsubscribe();
+        viewModel.dispose();
         super.onDestroy();
     }
 }

@@ -1,6 +1,6 @@
 package jp.keita.kagurazaka.rxproperty
 
-import rx.Observable
+import io.reactivex.Observable
 import java.util.*
 
 /**
@@ -8,26 +8,25 @@ import java.util.*
  */
 fun <T> Observable<T>.toRxProperty(): RxProperty<T> = RxProperty(this)
 
-
 /**
  * Convert from [Observable] to [RxProperty] with the initial value.
  *
- * @param initialValue a value to set.
+ * @param initialValue the initial value of [RxProperty]
  */
-fun <T> Observable<T>.toRxProperty(initialValue: T?) = RxProperty(this, initialValue)
+fun <T> Observable<T>.toRxProperty(initialValue: T) = RxProperty(this, initialValue)
 
 /**
  * Convert from [Observable] to [RxProperty] with the specified mode.
  *
- * @param mode mode to set.
+ * @param mode the mode of [RxProperty]
  */
 fun <T> Observable<T>.toRxProperty(mode: EnumSet<RxProperty.Mode>) = RxProperty(this, mode)
 
 /**
  * Convert from [Observable] to [RxProperty] with the initial value and the specified mode.
  *
- * @param initialValue a value to set.
- * @param mode mode to set.
+ * @param initialValue the initial value of [RxProperty]
+ * @param mode the mode of [RxProperty]
  */
-fun <T> Observable<T>.toRxProperty(initialValue: T?, mode: EnumSet<RxProperty.Mode>)
+fun <T> Observable<T>.toRxProperty(initialValue: T, mode: EnumSet<RxProperty.Mode>)
         = RxProperty(this, initialValue, mode)

@@ -1,5 +1,6 @@
 package jp.keita.kagurazaka.rxproperty.sample.todo
 
+import jp.keita.kagurazaka.rxproperty.Nothing
 import jp.keita.kagurazaka.rxproperty.RxCommand
 import jp.keita.kagurazaka.rxproperty.RxProperty
 import jp.keita.kagurazaka.rxproperty.sample.BR
@@ -17,10 +18,10 @@ class TodoViewModel : ViewModelBase() {
     val inputTodoItem: RxProperty<TodoItemViewModel>
             = RxProperty(TodoItemViewModel()).asManaged()
 
-    val addCommand: RxCommand<Void> = inputTodoItem.asObservable()
+    val addCommand: RxCommand<Nothing> = inputTodoItem
             .switchMap { it.onHasErrorChanged }
             .map { !it }
-            .toRxCommand<Void>(false)
+            .toRxCommand<Nothing>(false)
             .asManaged()
 
     val deleteDoneCommand: RxCommand<Void> = RxCommand()
@@ -40,28 +41,26 @@ class TodoViewModel : ViewModelBase() {
                 .subscribe { viewModeIndex.get()?.let(updateTodoList) } // Not smart :(
                 .asManaged()
 
-        viewModeIndex.asObservable()
-                .filter { it != null }
+        viewModeIndex.filter { it != null }
                 .map { it!! }
                 .subscribe { updateTodoList(it) }
                 .asManaged()
 
-        addCommand.asObservable()
-                .subscribe {
-                    val current = inputTodoItem.get()
-                    TodoRepository.store(current.model)
-                    current.unsubscribe()
-                    inputTodoItem.set(TodoItemViewModel())
-                }.asManaged()
+        addCommand.subscribe {
+            inputTodoItem.get()?.let {
+                TodoRepository.store(it.model)
+                it.dispose()
+                inputTodoItem.set(TodoItemViewModel())
+            }
+        }.asManaged()
 
-        deleteDoneCommand.asObservable()
-                .subscribe {
-                    TodoRepository.deleteDone()
-                }.asManaged()
+        deleteDoneCommand.subscribe {
+            TodoRepository.deleteDone()
+        }.asManaged()
     }
 
-    override fun unsubscribe() {
+    override fun dispose() {
         TodoRepository.clear()
-        super.unsubscribe()
+        super.dispose()
     }
 }

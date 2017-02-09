@@ -1,548 +1,559 @@
 package jp.keita.kagurazaka.rxproperty;
 
-import android.databinding.Observable;
+import android.databinding.ObservableBoolean;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
-import rx.functions.Action0;
-import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
+import io.reactivex.functions.Cancellable;
+import io.reactivex.functions.Function;
+import io.reactivex.observers.TestObserver;
+import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
+@SuppressWarnings("deprecation")
 public class RxCommandTest {
 
-    public static class VoidCommand {
-        @Mock
-        private Observable.OnPropertyChangedCallback mockPropertyChanged;
-        private PublishSubject<Boolean> canExecuteSource;
-        private TestSubscriber<Void> testSubscriber;
+    public static class NothingCommand {
+        Subject<Boolean> canExecuteSource;
 
         @Before
-        public void setUp() throws Exception {
-            MockitoAnnotations.initMocks(this);
+        public void setUp() {
             canExecuteSource = PublishSubject.create();
-            testSubscriber = new TestSubscriber<>();
-        }
-
-        @After
-        public void tearDown() throws Exception {
-            mockPropertyChanged = null;
-            canExecuteSource = null;
-            testSubscriber = null;
-        }
-
-        private void setUpCommand(final RxCommand<Void> command) {
-            command.asObservable().subscribe(testSubscriber);
-            command.getEnabled().addOnPropertyChangedCallback(mockPropertyChanged);
-            command.setUnbindView(new Action0() {
-                @Override
-                public void call() {
-                    command.getEnabled().removeOnPropertyChangedCallback(mockPropertyChanged);
-                }
-            });
         }
 
         @Test
-        public void constructWithoutArguments() {
-            RxCommand<Void> command = new RxCommand<>();
-            setUpCommand(command);
+        public void canExecuteReturnsTrueWhenConstructWithoutArguments() {
+            // when
+            RxCommand<Nothing> command = new RxCommand<>();
 
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // then
+            assertThat(command.canExecute(), is(true));
 
-            command.execute(null);
-
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertValue(null);
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.unsubscribe();
-
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            testSubscriber.assertValue(null);
-            testSubscriber.assertCompleted();
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // after
+            command.dispose();
         }
 
         @Test
-        public void constructFromSource() {
-            RxCommand<Void> command = new RxCommand<>(canExecuteSource.asObservable());
-            setUpCommand(command);
+        public void getEnabledReturnsTrueWhenConstructWithoutArguments() {
+            // when
+            RxCommand<Nothing> command = new RxCommand<>();
 
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // then
+            assertThat(command.getEnabled().get(), is(true));
 
-            // Not changed
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void getEnabledEmitsNoValuesWhenConstructWithoutArguments() {
+            // when
+            RxCommand<Nothing> command = new RxCommand<>();
+
+            // then
+            observableBooleanTestObserver(command)
+                    .assertNoValues()
+                    .dispose();
+
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void canExecuteInitiallyReturnsTrueWhenConstructWithSourceObservable() {
+            // when
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+
+            // then
+            assertThat(command.canExecute(), is(true));
+
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void getEnabledInitiallyReturnsTrueWhenConstructWithSourceObservable() {
+            // when
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+
+            // then
+            assertThat(command.getEnabled().get(), is(true));
+
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void getEnabledEmitsNoValuesTrueWhenConstructWithSourceObservable() {
+            // when
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+
+            // then
+            observableBooleanTestObserver(command)
+                    .assertNoValues()
+                    .dispose();
+
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void canExecuteInitiallyReturnsSpecifiedValueWhenConstructWithInitialValue() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource, false);
+
+            // then
+            assertThat(command.canExecute(), is(false));
+
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void getEnabledInitiallyReturnsSpecifiedValueWhenConstructWithInitialValue() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource, false);
+
+            // then
+            assertThat(command.getEnabled().get(), is(false));
+
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void getEnabledEmitsNoValuesWhenConstructWithInitialValue() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource, false);
+
+            // then
+            observableBooleanTestObserver(command)
+                    .assertNoValues()
+                    .dispose();
+
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void initialValueOfCanExecuteIsOverwrittenBySourceObservable() {
+            // given
+            Subject<Boolean> source = BehaviorSubject.createDefault(false);
+            RxCommand<Nothing> command = new RxCommand<>(source);
+
+            // then
+            assertThat(command.canExecute(), is(false));
+
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void initialValueOfGetEnabledIsOverwrittenBySourceObservable() {
+            // given
+            Subject<Boolean> source = BehaviorSubject.createDefault(false);
+            RxCommand<Nothing> command = new RxCommand<>(source);
+
+            // then
+            assertThat(command.getEnabled().get(), is(false));
+
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void getEnabledEmitsNoValuesWhenInitialValueIsOverwrittenBySourceObservable() {
+            // given
+            Subject<Boolean> source = BehaviorSubject.createDefault(false);
+            RxCommand<Nothing> command = new RxCommand<>(source);
+
+            // then
+            observableBooleanTestObserver(command)
+                    .assertNoValues()
+                    .dispose();
+
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void canExecuteFollowsSourceObservable() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+
+            // when
+            canExecuteSource.onNext(false);
+
+            // then
+            assertThat(command.canExecute(), is(false));
+
+            // when
             canExecuteSource.onNext(true);
 
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // then
+            assertThat(command.canExecute(), is(true));
 
-            // Change to unenabled
-            canExecuteSource.onNext(false);
-
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            // Force execute
-            command.execute(null);
-
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertValue(null);
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.unsubscribe();
-
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            testSubscriber.assertValue(null);
-            testSubscriber.assertCompleted();
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // after
+            command.dispose();
         }
 
         @Test
-        public void constructFromSourceWithInitialValue() {
-            RxCommand<Void> command = new RxCommand<>(canExecuteSource.asObservable(), false);
-            setUpCommand(command);
+        public void getEnabledFollowsSourceObservable() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+            TestObserver<Boolean> testObserver = observableBooleanTestObserver(command);
 
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            // Not changed
+            // when
             canExecuteSource.onNext(false);
-
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            // Change to enabled
             canExecuteSource.onNext(true);
-
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            // Execute
-            command.execute(null);
-
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertValue(null);
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.unsubscribe();
-
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            testSubscriber.assertValue(null);
-            testSubscriber.assertCompleted();
-            verify(mockPropertyChanged, times(2)).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-        }
-
-        @Test
-        public void multipleUnsubscriptionIsSafe() {
-            RxCommand<Void> command = new RxCommand<>(canExecuteSource.asObservable(), true);
-            setUpCommand(command);
-
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.unsubscribe();
-
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.unsubscribe();
-
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-        }
-
-        @Test
-        public void overwriteUnbindView() {
-            RxCommand<Void> command = new RxCommand<>(canExecuteSource.asObservable(), true);
-            setUpCommand(command);
-
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.setUnbindView(new Action0() {
-                @Override
-                public void call() {
-                    // Nothing to do
-                }
-            });
-
-            // Change to disabled
+            canExecuteSource.onNext(true);
             canExecuteSource.onNext(false);
 
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // then
+            testObserver.assertValues(false, true, false)
+                    .dispose();
+
+            // after
+            command.dispose();
         }
 
         @Test
-        public void whenSourceEmitsError() {
-            RxCommand<Void> command = new RxCommand<>(canExecuteSource.asObservable(), true);
-            setUpCommand(command);
+        public void throwsErrorWhenSourceObservableEmitsError() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+            TestObserver<Nothing> testObserver = command.test();
 
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // when
+            canExecuteSource.onError(new RuntimeException("Error in the source observable"));
 
-            // Source emits an error
-            canExecuteSource.onError(new IllegalStateException("some error!"));
+            // then
+            testObserver.assertFailureAndMessage(
+                    RuntimeException.class, "Error in the source observable")
+                    .dispose();
 
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertError(IllegalStateException.class);
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.unsubscribe();
-
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // after
+            command.dispose();
         }
 
         @Test
-        public void whenSourceIsCompleted() {
-            RxCommand<Void> command = new RxCommand<>(canExecuteSource.asObservable(), true);
-            setUpCommand(command);
+        public void autoDisposedWhenSourceObservableEmitsError() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
 
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // when
+            canExecuteSource.onError(new RuntimeException("Error in the source observable"));
 
-            // Source emits onCompleted
-            canExecuteSource.onCompleted();
-
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertCompleted();
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.unsubscribe();
-
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // then
+            assertThat(command.isDisposed(), is(true));
         }
 
         @Test
-        public void bindTriggerWhenCanExecuteTrue() {
-            RxCommand<Void> command = new RxCommand<>();
-            setUpCommand(command);
+        public void emitsOnCompleteWhenSourceObservableIsCompleted() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+            TestObserver<Nothing> testObserver = command.test();
 
-            Subject<Void, Void> trigger = PublishSubject.create();
-            command.bindTrigger(trigger);
+            // when
+            canExecuteSource.onComplete();
 
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // then
+            testObserver.assertResult()
+                    .dispose();
 
-            // Kick by the trigger
-            trigger.onNext(null);
-
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertValue(null);
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.unsubscribe();
-
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            testSubscriber.assertValue(null);
-            testSubscriber.assertCompleted();
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // after
+            command.dispose();
         }
 
         @Test
-        public void bindTriggerWhenCanExecuteFalse() {
-            RxCommand<Void> command = new RxCommand<>(null, false);
-            setUpCommand(command);
+        public void autoDisposedWhenSourceObservableIsCompleted() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
 
-            PublishSubject<Void> trigger = PublishSubject.create();
-            command.bindTrigger(trigger);
+            // when
+            canExecuteSource.onComplete();
 
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            // Kick by the trigger
-            trigger.onNext(null);
-
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.unsubscribe();
-
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            testSubscriber.assertCompleted();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // then
+            assertThat(command.isDisposed(), is(true));
         }
 
         @Test
-        public void whenBoundTriggerEmitsError() {
-            RxCommand<Void> command = new RxCommand<>(null, true);
-            setUpCommand(command);
+        public void emitsNothingWhenExecutes() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>();
+            TestObserver<Nothing> testObserver = command.test();
 
-            PublishSubject<Void> trigger = PublishSubject.create();
-            command.bindTrigger(trigger);
+            // when
+            command.execute(Nothing.INSTANCE);
+            command.execute(Nothing.INSTANCE);
 
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // then
+            testObserver.assertSubscribed()
+                    .assertValues(Nothing.INSTANCE, Nothing.INSTANCE)
+                    .assertNoErrors()
+                    .assertNotComplete()
+                    .dispose();
 
-            // Bound trigger emits an error
-            trigger.onError(new IllegalStateException("some error!"));
-
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertError(IllegalStateException.class);
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.unsubscribe();
-
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // after
+            command.dispose();
         }
 
         @Test
-        public void whenBoundTriggerIsCompleted() {
-            RxCommand<Void> command = new RxCommand<>(null, true);
-            setUpCommand(command);
+        public void emitsNothingWhenExecutesAlthoughCanExecuteIsFalse() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource, false);
+            TestObserver<Nothing> testObserver = command.test();
 
-            PublishSubject<Void> trigger = PublishSubject.create();
-            command.bindTrigger(trigger);
+            // when
+            command.execute(Nothing.INSTANCE);
 
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // then
+            testObserver.assertSubscribed()
+                    .assertValue(Nothing.INSTANCE)
+                    .assertNoErrors()
+                    .assertNotComplete()
+                    .dispose();
 
-            // Bound trigger emits onCompleted
-            trigger.onCompleted();
-
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertCompleted();
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.unsubscribe();
-
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // after
+            command.dispose();
         }
 
         @Test
-        public void bindTriggerTwice() {
-            RxCommand<Void> command = new RxCommand<>(null, true);
-            setUpCommand(command);
+        public void emitValueWhenBoundTriggerEmitsValue() {
+            // given
+            Subject<Nothing> trigger = PublishSubject.create();
+            RxCommand<Nothing> command = new RxCommand<Nothing>()
+                    .bindTrigger(trigger);
+            TestObserver<Nothing> testObserver = command.test();
 
-            PublishSubject<Void> trigger1 = PublishSubject.create();
-            command.bindTrigger(trigger1);
+            // when
+            trigger.onNext(Nothing.INSTANCE);
 
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // then
+            testObserver.assertSubscribed()
+                    .assertValue(Nothing.INSTANCE)
+                    .assertNoErrors()
+                    .assertNotComplete()
+                    .dispose();
 
-            // Kick by the trigger
-            trigger1.onNext(null);
+            // after
+            command.dispose();
+        }
 
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertValue(null);
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+        @Test
+        public void throwsErrorWhenBoundTriggerEmitsError() {
+            // given
+            Subject<Nothing> trigger = PublishSubject.create();
+            RxCommand<Nothing> command = new RxCommand<Nothing>()
+                    .bindTrigger(trigger);
+            TestObserver<Nothing> testObserver = command.test();
 
-            // Overwrite trigger
-            PublishSubject<Void> trigger2 = PublishSubject.create();
-            command.bindTrigger(trigger2);
+            // when
+            trigger.onError(new RuntimeException("Error in the trigger observable"));
 
-            // Kick by the old trigger
-            trigger1.onNext(null);
+            // then
+            testObserver.assertFailureAndMessage(
+                    RuntimeException.class, "Error in the trigger observable")
+                    .dispose();
 
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertValue(null);
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // after
+            command.dispose();
+        }
 
-            // Kick by the new trigger
-            trigger2.onNext(null);
+        @Test
+        public void autoDisposedWhenBoundTriggerEmitsError() {
+            // given
+            Subject<Nothing> trigger = PublishSubject.create();
+            RxCommand<Nothing> command = new RxCommand<Nothing>()
+                    .bindTrigger(trigger);
 
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertValues(null, null);
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // when
+            trigger.onError(new RuntimeException("Error in the trigger observable"));
 
-            command.unsubscribe();
+            // then
+            assertThat(command.isDisposed(), is(true));
+        }
 
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            testSubscriber.assertValues(null, null);
-            testSubscriber.assertCompleted();
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+        @Test
+        public void emitsOnCompleteWhenBoundTriggerIsCompleted() {
+            // given
+            Subject<Nothing> trigger = PublishSubject.create();
+            RxCommand<Nothing> command = new RxCommand<Nothing>()
+                    .bindTrigger(trigger);
+            TestObserver<Nothing> testObserver = command.test();
+
+            // when
+            trigger.onNext(Nothing.INSTANCE);
+            trigger.onComplete();
+
+            // then
+            testObserver.assertResult(Nothing.INSTANCE)
+                    .dispose();
+
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void autoDisposedWhenBoundTriggerIsCompleted() {
+            // given
+            Subject<Nothing> trigger = PublishSubject.create();
+            RxCommand<Nothing> command = new RxCommand<Nothing>()
+                    .bindTrigger(trigger);
+
+            // when
+            trigger.onComplete();
+
+            // then
+            assertThat(command.isDisposed(), is(true));
+        }
+
+        @Test
+        public void triggerBindingCanExecuteMoreThanOnce() {
+            // given
+            Subject<Nothing> firstTrigger = PublishSubject.create();
+            Subject<Nothing> secondTrigger = PublishSubject.create();
+            RxCommand<Nothing> command = new RxCommand<>();
+            TestObserver<Nothing> testObserver = command.test();
+
+            // when
+            command.bindTrigger(firstTrigger);
+            firstTrigger.onNext(Nothing.INSTANCE);
+            command.bindTrigger(secondTrigger);
+            firstTrigger.onNext(Nothing.INSTANCE);
+            secondTrigger.onNext(Nothing.INSTANCE);
+
+            // then
+            testObserver.assertSubscribed()
+                    .assertValues(Nothing.INSTANCE, Nothing.INSTANCE)
+                    .assertNoErrors()
+                    .assertNotComplete()
+                    .dispose();
+
+            // after
+            command.dispose();
+        }
+
+        @Test
+        public void isDisposedReturnsTrueWhenDisposed() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>();
+            TestObserver<Nothing> testObserver = command.test();
+
+            // when
+            command.dispose();
+
+            // then
+            assertThat(command.isDisposed(), is(true));
+
+            // after
+            testObserver.dispose();
+        }
+
+        @Test
+        public void canDisposeMoreThanOnce() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>();
+            TestObserver<Nothing> testObserver = command.test();
+
+            // when
+            command.dispose();
+            command.dispose();
+            command.dispose();
+
+            // then
+            assertThat(command.isDisposed(), is(true));
+
+            // after
+            testObserver.dispose();
+        }
+
+        @Test
+        public void emitsOnCompleteWhenDisposed() {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>();
+            TestObserver<Nothing> testObserver = command.test();
+
+            // when
+            command.execute(Nothing.INSTANCE);
+            command.dispose();
+
+            // then
+            testObserver.assertResult(Nothing.INSTANCE)
+                    .dispose();
+        }
+
+        @Test
+        public void unbindViewWillBeExecutedWhenDisposed() throws Exception {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>();
+            Cancellable mockCancellable = Mockito.mock(Cancellable.class);
+            command.setCancellable(mockCancellable);
+            verify(mockCancellable, never()).cancel();
+
+            // when
+            command.dispose();
+
+            // then
+            verify(mockCancellable).cancel();
+        }
+
+        @Test
+        public void ignoreExceptionByUnbindView() throws Exception {
+            // given
+            RxCommand<Nothing> command = new RxCommand<>();
+            Cancellable mockCancellable = Mockito.mock(Cancellable.class);
+            doThrow(new RuntimeException("Error in unbindView")).when(mockCancellable).cancel();
+            command.setCancellable(mockCancellable);
+            verify(mockCancellable, never()).cancel();
+
+            // when
+            command.dispose();
+
+            // then
+            verify(mockCancellable).cancel();
         }
     }
 
-    public static class TypedCommand {
-        private static class CommandParameter {
-            String value;
-
-            CommandParameter(String value) {
-                this.value = value;
-            }
-        }
-
-        @Mock
-        private Observable.OnPropertyChangedCallback mockPropertyChanged;
-        private PublishSubject<Boolean> canExecuteSource;
-        private PublishSubject<CommandParameter> triggerSource;
-        private TestSubscriber<CommandParameter> testSubscriber;
-
-        @Before
-        public void setUp() throws Exception {
-            MockitoAnnotations.initMocks(this);
-            canExecuteSource = PublishSubject.create();
-            triggerSource = PublishSubject.create();
-            testSubscriber = new TestSubscriber<>();
-        }
-
-        @After
-        public void tearDown() throws Exception {
-            mockPropertyChanged = null;
-            canExecuteSource = null;
-            triggerSource = null;
-            testSubscriber = null;
-        }
-
-        private void setUpCommand(RxCommand<CommandParameter> command) {
-            command.asObservable().subscribe(testSubscriber);
-            command.getEnabled().addOnPropertyChangedCallback(mockPropertyChanged);
-            command.bindTrigger(triggerSource);
-        }
-
-        private void tearDownCommand(RxCommand<CommandParameter> command) {
-            command.getEnabled().removeOnPropertyChangedCallback(mockPropertyChanged);
-        }
-
+    public static class ParameterCommand {
         @Test
-        public void constructFromSourceWithInitialValue() {
-            RxCommand<CommandParameter> command = new RxCommand<>(
-                    canExecuteSource.asObservable(), false);
-            setUpCommand(command);
+        public void emitsValueWhenExecutes() {
+            // given
+            RxCommand<String> command = new RxCommand<>();
+            TestObserver<String> testObserver = command.test();
 
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
+            // when
+            command.execute("John Smith");
 
-            // Not changed
-            canExecuteSource.onNext(false);
+            // then
+            testObserver.assertSubscribed()
+                    .assertValues("John Smith")
+                    .assertNoErrors()
+                    .assertNotComplete()
+                    .dispose();
 
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertNoValues();
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            // Force execute
-            command.execute(new CommandParameter("first"));
-
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertValueCount(1);
-            assertThat(testSubscriber.getOnNextEvents().get(0).value, is("first"));
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            // Kick by trigger
-            triggerSource.onNext(new CommandParameter("second"));
-
-            assertFalse(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertValueCount(1);
-            assertThat(testSubscriber.getOnNextEvents().get(0).value, is("first"));
-            verify(mockPropertyChanged, never()).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            // Change to enabled
-            canExecuteSource.onNext(true);
-
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertValueCount(1);
-            assertThat(testSubscriber.getOnNextEvents().get(0).value, is("first"));
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            // Kick by trigger again
-            triggerSource.onNext(new CommandParameter("second"));
-
-            assertTrue(command.canExecute());
-            assertFalse(command.isUnsubscribed());
-            testSubscriber.assertValueCount(2);
-            assertThat(testSubscriber.getOnNextEvents().get(0).value, is("first"));
-            assertThat(testSubscriber.getOnNextEvents().get(1).value, is("second"));
-            verify(mockPropertyChanged).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            command.unsubscribe();
-
-            assertFalse(command.canExecute());
-            assertTrue(command.isUnsubscribed());
-            testSubscriber.assertValueCount(2);
-            testSubscriber.assertCompleted();
-            verify(mockPropertyChanged, times(2)).onPropertyChanged(Mockito.<Observable>any(), anyInt());
-
-            tearDownCommand(command);
+            // after
+            command.dispose();
         }
+    }
+
+    private static TestObserver<Boolean> observableBooleanTestObserver(RxCommand command) {
+        return Observe.allPropertiesOf(command.getEnabled())
+                .map(new Function<ObservableBoolean, Boolean>() {
+                    @Override
+                    public Boolean apply(ObservableBoolean value) throws Exception {
+                        return value.get();
+                    }
+                })
+                .test();
     }
 }

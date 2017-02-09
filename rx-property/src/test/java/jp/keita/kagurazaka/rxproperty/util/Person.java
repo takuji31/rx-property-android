@@ -2,7 +2,7 @@ package jp.keita.kagurazaka.rxproperty.util;
 
 import android.databinding.BaseObservable;
 
-public class Person extends BaseObservable {
+public final class Person extends BaseObservable {
     public static final int ID_FIRST_NAME = 1;
     public static final int ID_LAST_NAME = 2;
 
@@ -30,5 +30,13 @@ public class Person extends BaseObservable {
     public void setLastName(String lastName) {
         this.lastName = lastName;
         notifyPropertyChanged(ID_LAST_NAME);
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                '}';
     }
 }

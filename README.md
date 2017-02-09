@@ -15,10 +15,10 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.k-kagurazaka.rx-property-android:rx-property:2.1.0'
+    compile 'com.github.k-kagurazaka.rx-property-android:rx-property:3.0.0'
 
     // If you want to use Kotlin syntax
-    compile 'com.github.k-kagurazaka.rx-property-android:rx-property-kotlin:2.1.0'
+    compile 'com.github.k-kagurazaka.rx-property-android:rx-property-kotlin:3.0.0'
 }
 ```
 
@@ -34,15 +34,14 @@ which is abstraction of user manipulation.
 public class ViewModel {
   public final RxProperty<String> input;
   public final ReadOnlyRxProperty<String> output;
-  public final RxCommand<Void> command;
+  public final RxCommand<Nothing> command;
 
   public JavaViewModel() {
     input = new RxProperty<>("")
         .setValidator(it -> TextUtils.isEmpty(it) ? "Text must not be empty!" : null);
 
     output = new RxProperty<>(
-        input.asObservable()
-            .map(it -> it == null ? "" : it.toUpperCase())
+        input.map(it -> it == null ? "" : it.toUpperCase())
     );
 
     command = new RxCommand<>(input.onHasErrorsChanged().map(it -> !it));
@@ -169,13 +168,12 @@ class ViewModel {
     val input = RxProperty("")
             .setValidator { if (TextUtils.isEmpty(it)) "Text must not be empty!" else null }
 
-    val output = input.asObservable()
-            .map { it?.toUpperCase() ?: "" }
-            .toRxProperty()
+    val output = input.map { it?.toUpperCase() ?: "" }
+            .toReadOnlyRxProperty()
 
     val command = input.onHasErrorsChanged()
             .map { !it }
-            .toRxCommand<Void>()
+            .toRxCommand<Nothing>()
 
     val person = Person("John", "Smith")
     val firstName = person.observeProperty(BR.firstName) { it.firstName }

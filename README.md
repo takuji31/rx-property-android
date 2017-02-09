@@ -145,8 +145,8 @@ viewModel.someMenuCommand.bindTrigger(RxMenuItem.clicks(menu.findItem(R.id.some_
 
 ## Create from `android.databinding.Observable`
 
-If you already have a `android.databinding.Observable` based view model, you can use a converter from the view model into `rx.Observable`.
-The library provides a feature to convert from `rx.Observable` to `RxProperty`, so you easily create `RxProperty` from the view model.
+If you already have a `android.databinding.Observable` based view model, you can use a converter from the view model into `io.reactivex.Observable`.
+The library provides a feature to convert from `io.reactivex.Observable` to `RxProperty`, so you easily create `RxProperty` from the view model.
 
 ```java
 class Person extends BaseObservable { ... }

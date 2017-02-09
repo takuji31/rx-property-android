@@ -1,30 +1,42 @@
 package jp.keita.kagurazaka.rxproperty;
 
 import android.databinding.ObservableBoolean;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import rx.Observable;
-import rx.Observer;
-import rx.Subscriber;
-import rx.Subscription;
-import rx.functions.Action0;
-import rx.subjects.PublishSubject;
-import rx.subjects.SerializedSubject;
-import rx.subscriptions.CompositeSubscription;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Cancellable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
+import jp.keita.kagurazaka.rxproperty.internal.Helper;
 
 /**
  * Command class implementation in "Command pattern" for Android Data Binding. Whether {@code
  * RxCommand} can execute is detected by a boolean source {@link Observable}.
  */
-public class RxCommand<T> implements Subscription {
+public class RxCommand<T> extends Observable<T> implements Disposable {
+    @NonNull
     private final ObservableBoolean canExecuteFlag;
-    private final SerializedSubject<T, T> trigger = PublishSubject.<T>create().toSerialized();
 
-    private Subscription triggerSourceSubscription = null;
-    private final CompositeSubscription subscriptions = new CompositeSubscription();
+    @NonNull
+    private final Subject<T> kicker = PublishSubject.<T>create().toSerialized();
 
-    private boolean isUnsubscribed = false;
+    @Nullable
+    private Disposable triggerSourceDisposable = null;
 
-    private Action0 unbindView = null;
+    @Nullable
+    private Disposable canExecuteSourceDisposable = null;
+
+    @NonNull
+    private final AtomicBoolean isDisposed = new AtomicBoolean(false);
+
+    @Nullable
+    private Cancellable cancellable = null;
 
     /**
      * Creates {@code RxCommand} which is always enabled.
@@ -39,7 +51,7 @@ public class RxCommand<T> implements Subscription {
      * @param canExecuteSource an {@link Observable} representing that can this {@code RxCommand}
      *                         execute
      */
-    public RxCommand(Observable<Boolean> canExecuteSource) {
+    public RxCommand(@Nullable Observable<Boolean> canExecuteSource) {
         this(canExecuteSource, true);
     }
 
@@ -49,14 +61,14 @@ public class RxCommand<T> implements Subscription {
      *
      * @param canExecuteSource an {@link Observable} to emit whether this {@code RxCommand} can
      *                         execute
-     * @param initialValue     whether this {@code RxCommand} can execute initially
+     * @param canExecute       whether this {@code RxCommand} can execute initially
      */
-    public RxCommand(final Observable<Boolean> canExecuteSource, boolean initialValue) {
-        canExecuteFlag = new ObservableBoolean(initialValue);
+    public RxCommand(@Nullable final Observable<Boolean> canExecuteSource, boolean canExecute) {
+        canExecuteFlag = new ObservableBoolean(canExecute);
 
         if (canExecuteSource != null) {
-            Subscription subscription = canExecuteSource.distinctUntilChanged()
-                    .subscribe(new Subscriber<Boolean>() {
+            canExecuteSourceDisposable = canExecuteSource.distinctUntilChanged()
+                    .subscribeWith(new DisposableObserver<Boolean>() {
                         @Override
                         public void onNext(Boolean value) {
                             canExecuteFlag.set(value);
@@ -64,27 +76,17 @@ public class RxCommand<T> implements Subscription {
 
                         @Override
                         public void onError(Throwable e) {
-                            canExecuteFlag.set(false);
-                            trigger.onError(e);
+                            kicker.onError(e);
+                            RxCommand.this.dispose();
                         }
 
                         @Override
-                        public void onCompleted() {
-                            canExecuteFlag.set(false);
-                            trigger.onCompleted();
+                        public void onComplete() {
+                            kicker.onComplete();
+                            RxCommand.this.dispose();
                         }
                     });
-            subscriptions.add(subscription);
         }
-    }
-
-    /**
-     * Gets a hot {@link Observable} to execute handlers this {@code RxCommand}.
-     *
-     * @return a hot {@link Observable} to execute handlers of this {@code RxCommand}
-     */
-    public Observable<T> asObservable() {
-        return trigger.asObservable();
     }
 
     /**
@@ -101,8 +103,8 @@ public class RxCommand<T> implements Subscription {
      *
      * @param parameter a parameter of this {@code RxCommand}
      */
-    public void execute(T parameter) {
-        trigger.onNext(parameter);
+    public void execute(@NonNull T parameter) {
+        kicker.onNext(parameter);
     }
 
     /**
@@ -110,11 +112,12 @@ public class RxCommand<T> implements Subscription {
      *
      * @param triggerSource an {@link Observable} to kick this {@code RxCommand}
      */
-    public void bindTrigger(Observable<T> triggerSource) {
-        if (triggerSourceSubscription != null) {
-            triggerSourceSubscription.unsubscribe();
+    public RxCommand<T> bindTrigger(@NonNull Observable<T> triggerSource) {
+        if (triggerSourceDisposable != null) {
+            triggerSourceDisposable.dispose();
         }
-        triggerSourceSubscription = triggerSource.subscribe(new Observer<T>() {
+
+        triggerSourceDisposable = triggerSource.subscribeWith(new DisposableObserver<T>() {
             @Override
             public void onNext(T parameter) {
                 if (canExecute()) {
@@ -124,16 +127,18 @@ public class RxCommand<T> implements Subscription {
 
             @Override
             public void onError(Throwable e) {
-                canExecuteFlag.set(false);
-                trigger.onError(e);
+                kicker.onError(e);
+                RxCommand.this.dispose();
             }
 
             @Override
-            public void onCompleted() {
-                canExecuteFlag.set(false);
-                trigger.onCompleted();
+            public void onComplete() {
+                kicker.onComplete();
+                RxCommand.this.dispose();
             }
         });
+
+        return this;
     }
 
     /**
@@ -141,36 +146,31 @@ public class RxCommand<T> implements Subscription {
      * observers of this {@code RxCommand}.
      */
     @Override
-    public void unsubscribe() {
-        if (isUnsubscribed) {
-            return;
-        }
-        isUnsubscribed = true;
+    public void dispose() {
+        if (isDisposed.compareAndSet(false, true)) {
+            Helper.safeComplete(kicker);
 
-        trigger.onCompleted();
-        subscriptions.unsubscribe();
-        if (triggerSourceSubscription != null) {
-            triggerSourceSubscription.unsubscribe();
-        }
+            Helper.safeDispose(canExecuteSourceDisposable);
+            Helper.safeDispose(triggerSourceDisposable);
 
-        if (canExecute()) {
-            canExecuteFlag.set(false);
+            if (canExecute()) {
+                canExecuteFlag.set(false);
+            }
+
+            Helper.safeCancel(cancellable);
+            cancellable = null;
         }
-        if (unbindView != null) {
-            unbindView.call();
-        }
-        unbindView = null;
     }
 
     /**
-     * Indicates whether this {@code RxCommand} is currently unsubscribed.
+     * Indicates whether this {@code RxCommand} is currently disposed.
      *
      * @return {@code true} if this {@code RxCommand} has no {@link Observable} as source or is
-     * currently unsubscribed, {@code false} otherwise
+     * currently disposed, {@code false} otherwise
      */
     @Override
-    public boolean isUnsubscribed() {
-        return isUnsubscribed;
+    public boolean isDisposed() {
+        return isDisposed.get();
     }
 
     /**
@@ -187,10 +187,15 @@ public class RxCommand<T> implements Subscription {
      * in {@link android.databinding.BindingAdapter} implementation.
      */
     @Deprecated
-    public void setUnbindView(Action0 action) {
-        if (unbindView != null) {
-            unbindView.call();
-        }
-        unbindView = action;
+    public void setCancellable(@NonNull Cancellable cancellable) {
+        Helper.safeCancel(this.cancellable);
+        this.cancellable = cancellable;
     }
+
+    @Override
+    protected void subscribeActual(final Observer<? super T> observer) {
+        kicker.subscribe(observer);
+    }
+
+
 }

@@ -1,6 +1,6 @@
 package jp.keita.kagurazaka.rxproperty
 
-import rx.Observable
+import io.reactivex.Observable
 
 /**
  * Convert from [Observable] to [RxCommand].

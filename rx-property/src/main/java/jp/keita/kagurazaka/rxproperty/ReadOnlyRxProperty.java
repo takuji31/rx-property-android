@@ -1,117 +1,269 @@
 package jp.keita.kagurazaka.rxproperty;
 
-import android.databinding.ObservableBoolean;
 import android.databinding.ObservableField;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import java.util.List;
+import java.util.EnumSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import rx.Observable;
-import rx.Subscription;
+import io.reactivex.Maybe;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Cancellable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.plugins.RxJavaPlugins;
+import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
+import jp.keita.kagurazaka.rxproperty.internal.Helper;
 
 /**
  * One-way bindable and observable property for Android Data Binding.
+ *
+ * @param <T> the type of the inner property
  */
-public interface ReadOnlyRxProperty<T> extends Subscription {
-    /**
-     * Gets a hot {@link Observable} to emit values of this {@code RxProperty}.
-     *
-     * @return a hot {@link Observable} to emit values of this {@code RxProperty}
-     */
-    Observable<T> asObservable();
+public class ReadOnlyRxProperty<T>
+        extends Observable<T>
+        implements android.databinding.Observable, Disposable {
+    private final boolean isDistinctUntilChanged;
+
+    // for value emitter
+    @NonNull
+    private final ReadOnlyRxPropertyValueField<T> valueField;
+
+    @NonNull
+    private final Subject<T> valueEmitter;
+
+    @NonNull
+    private final AtomicBoolean isDisposed = new AtomicBoolean(false);
+
+    @Nullable
+    private Cancellable cancellable = null;
+
+    @NonNull
+    private final Disposable sourceDisposable;
 
     /**
-     * Gets an event {@link Observable} of validation error messages.
-     * <p>
-     * If no validators is set to this {@code RxProperty}, this event never emits messages.
+     * Creates {@code ReadOnlyRxProperty} from the specified {@link Observable}.
      *
-     * @return a hot {@link Observable} to emit current validation error messages of this
-     * {@code RxProperty}
+     * @param source a source {@link Observable} of this {@code ReadOnlyRxProperty}
      */
-    Observable<List<String>> onErrorsChanged();
+    public ReadOnlyRxProperty(@NonNull Observable<T> source) {
+        this(source, Maybe.<T>empty(), RxProperty.Mode.DEFAULT);
+    }
 
     /**
-     * Gets an event {@link Observable} of summarized validation error messages.
-     * <p>
-     * If no validators is set to this {@code RxProperty}, this event never emits messages.
+     * Creates {@code ReadOnlyRxProperty} from the specified {@link Observable} with the initial
+     * value.
      *
-     * @return a hot {@link Observable} to emit summarized validation error messages of this
-     * {@code RxProperty}
+     * @param source       a source {@link Observable} of this {@code ReadOnlyRxProperty}
+     * @param initialValue the initial value of this {@code ReadOnlyRxProperty}
      */
-    Observable<String> onSummarizedErrorChanged();
+    public ReadOnlyRxProperty(@NonNull Observable<T> source, @NonNull T initialValue) {
+        this(source, Helper.createInitialMaybe(initialValue), RxProperty.Mode.DEFAULT);
+    }
 
     /**
-     * Gets an event {@link Observable} to emit {@link ReadOnlyRxProperty#hasErrors} when it is
-     * changed.
-     * <p>
-     * If no validators is set to this {@code RxProperty}, this event never emits messages.
+     * Creates {@code ReadOnlyRxProperty} from the specified {@link Observable} with the specified
+     * mode.
      *
-     * @return a hot {@link Observable} to emit {@link ReadOnlyRxProperty#hasErrors} when it is
-     * changed
+     * @param source a source {@link Observable} of this {@code ReadOnlyRxProperty}
+     * @param mode   mode of this {@code ReadOnlyRxProperty}
      */
-    Observable<Boolean> onHasErrorsChanged();
+    public ReadOnlyRxProperty(@NonNull Observable<T> source,
+                              @NonNull EnumSet<RxProperty.Mode> mode) {
+        this(source, Maybe.<T>empty(), mode);
+    }
 
     /**
-     * Gets the latest value of this {@code RxProperty}.
+     * Creates {@code ReadOnlyRxProperty} from the specified {@link Observable} with the initial
+     * value and the specified mode.
      *
-     * @return the latest value stored in this {@code RxProperty}
+     * @param source       a source {@link Observable} of this {@code ReadOnlyRxProperty}
+     * @param initialValue the initial value of this {@code ReadOnlyRxProperty}
+     * @param mode         mode of this {@code ReadOnlyRxProperty}
      */
-    T get();
+    public ReadOnlyRxProperty(@NonNull Observable<T> source, @NonNull T initialValue,
+                              @NonNull EnumSet<RxProperty.Mode> mode) {
+        this(source, Helper.createInitialMaybe(initialValue), mode);
+    }
+
+    private ReadOnlyRxProperty(@NonNull Observable<T> source, @NonNull Maybe<T> initialMaybe,
+                               @NonNull EnumSet<RxProperty.Mode> mode) {
+        // null check
+        Helper.checkNull(source, "source");
+        Helper.checkNull(mode, "mode");
+
+        // Initialize an ObservableField.
+        T initialValue = initialMaybe.blockingGet();
+        valueField = new ReadOnlyRxPropertyValueField<>(this, initialValue);
+
+        // Set modes.
+        isDistinctUntilChanged
+                = !mode.contains(RxProperty.Mode.NONE)
+                && mode.contains(RxProperty.Mode.DISTINCT_UNTIL_CHANGED);
+        boolean isRaiseLatestValueOnSubscribe
+                = !mode.contains(RxProperty.Mode.NONE)
+                && mode.contains(RxProperty.Mode.RAISE_LATEST_VALUE_ON_SUBSCRIBE);
+
+        // Create a value emitter.
+        if (isRaiseLatestValueOnSubscribe) {
+            valueEmitter = (initialValue != null ?
+                    BehaviorSubject.createDefault(initialValue) :
+                    BehaviorSubject.<T>create()).toSerialized();
+        } else {
+            valueEmitter = PublishSubject.<T>create().toSerialized();
+        }
+
+        // Subscribe the source observable.
+        sourceDisposable = source.subscribeWith(new DisposableObserver<T>() {
+            @Override
+            public void onNext(T value) {
+                set(value);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                valueEmitter.onError(e);
+                ReadOnlyRxProperty.this.dispose();
+            }
+
+            @Override
+            public void onComplete() {
+                valueEmitter.onComplete();
+                ReadOnlyRxProperty.this.dispose();
+            }
+        });
+
+        // Register RxJava plugins.
+        RxJavaPlugins.onAssembly(this);
+    }
 
     /**
-     * Gets the current validation error messages of this {@code RxProperty}.
+     * Gets the latest value of this {@code ReadOnlyRxProperty}.
      *
-     * @return the current validation error messages if validation failed; otherwise null
+     * @return the latest value stored in this {@code ReadOnlyRxProperty}
      */
-    List<String> getErrorMessages();
+    @Nullable
+    public T get() {
+        return valueField.get();
+    }
 
     /**
-     * Gets the current summarized validation error message of this {@code RxProperty}.
-     *
-     * @return the current summarized validation error message if validation failed; otherwise null
+     * Forcibly notifies the latest value of this {@code ReadOnlyRxProperty} to all observers
+     * including the bound view. This method ignores {@link RxProperty.Mode#DISTINCT_UNTIL_CHANGED}.
      */
-    String getSummarizedErrorMessage();
-
-    /**
-     * Returns whether this {@code RxProperty} has validation errors.
-     *
-     * @return true if this {@code RxProperty} has validation errors; otherwise else
-     */
-    boolean hasErrors();
+    public void forceNotify() {
+        valueField.setValue(get());
+    }
 
     /**
      * Stops receiving notifications by the source {@link Observable} and send notifications to
-     * observers of this {@code RxProperty}.
+     * observers of this {@code ReadOnlyRxProperty}.
      */
-    void unsubscribe();
+    @Override
+    public void dispose() {
+        if (isDisposed.compareAndSet(false, true)) {
+            // Terminate internal subjects.
+            Helper.safeComplete(valueEmitter);
+
+            // Dispose the source subscription.
+            Helper.safeDispose(sourceDisposable);
+
+            // Unbind a view observer.
+            Helper.safeCancel(cancellable);
+            cancellable = null;
+        }
+    }
 
     /**
-     * Indicates whether this {@code RxProperty} is currently unsubscribed.
+     * Indicates whether this {@code ReadOnlyRxProperty} is currently disposed.
      *
-     * @return {@code true} if this {@code RxProperty} has no {@link Observable} as source or is
-     * currently unsubscribed, {@code false} otherwise
+     * @return {@code true} if this {@code ReadOnlyRxProperty} has no {@link Observable} as source
+     * or is currently disposed, {@code false} otherwise
      */
-    boolean isUnsubscribed();
+    @Override
+    public boolean isDisposed() {
+        return isDisposed.get();
+    }
+
+    @Override
+    public void addOnPropertyChangedCallback(OnPropertyChangedCallback callback) {
+        valueField.addOnPropertyChangedCallback(callback);
+    }
+
+    @Override
+    public void removeOnPropertyChangedCallback(OnPropertyChangedCallback callback) {
+        valueField.removeOnPropertyChangedCallback(callback);
+    }
+
+    @Override
+    protected void subscribeActual(Observer<? super T> observer) {
+        valueEmitter.subscribe(observer);
+    }
+
+    private void set(@NonNull T value) {
+        if (isDisposed()) {
+            return;
+        }
+
+        if (isDistinctUntilChanged && Helper.compare(value, get())) {
+            return;
+        }
+        valueField.setValue(value);
+    }
 
     /**
      * @deprecated This is a magic method for Data Binding. Don't call it in your code. To get the
      * latest value of this property, use {@link ReadOnlyRxProperty#get()} instead of this method.
      */
     @Deprecated
-    ObservableField<T> getValue();
+    public ObservableField<T> getValue() {
+        return valueField;
+    }
 
     /**
-     * @deprecated This is a magic method for Data Binding. Don't call it in your code. To get the
-     * current validation error message of this property, use
-     * {@link ReadOnlyRxProperty#getSummarizedErrorMessage()} instead of this method.
+     * @deprecated This is a magic method for Data Binding. Don't call it in your code except
+     * in {@link android.databinding.BindingAdapter} implementation.
      */
     @Deprecated
-    ObservableField<String> getError();
+    public void setCancellable(@Nullable Cancellable cancellable) {
+        Helper.safeCancel(this.cancellable);
+        this.cancellable = cancellable;
+    }
 
     /**
-     * @deprecated This is a magic method for Data Binding. Don't call it in your code. To get the
-     * current validation error message of this property, use
-     * {@link ReadOnlyRxProperty#hasErrors()} instead of this method.
+     * Specialized {@link ObservableField} to represent a value of {@link ReadOnlyRxProperty},
+     * which is used in view binding.
+     *
+     * @param <T> the type of value stored in this property
      */
-    @Deprecated
-    ObservableBoolean getHasError();
+    private static class ReadOnlyRxPropertyValueField<T> extends ObservableField<T> {
+        private final ReadOnlyRxProperty<T> parent;
+        private T value;
+
+        ReadOnlyRxPropertyValueField(ReadOnlyRxProperty<T> parent, T initialValue) {
+            this.parent = parent;
+            this.value = initialValue;
+        }
+
+        @Override
+        public T get() {
+            return value;
+        }
+
+        @Override
+        public void set(T value) {
+            throw new UnsupportedOperationException(
+                    "ReadOnlyRxProperty doesn't support two-way binding.");
+        }
+
+        void setValue(T value) {
+            this.value = value;
+            parent.valueEmitter.onNext(value);
+            notifyChange();
+        }
+    }
 }

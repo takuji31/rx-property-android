@@ -40,7 +40,7 @@ public class ViewModel {
     input = new RxProperty<>("")
         .setValidator(it -> TextUtils.isEmpty(it) ? "Text must not be empty!" : null);
 
-    output = new RxProperty<>(
+    output = new ReadOnlyRxProperty<>(
         input.map(it -> it == null ? "" : it.toUpperCase())
     );
 

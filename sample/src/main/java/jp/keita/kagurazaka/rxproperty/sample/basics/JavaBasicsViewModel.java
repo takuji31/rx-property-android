@@ -6,8 +6,6 @@ import org.jetbrains.annotations.NotNull;
 
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
 import jp.keita.kagurazaka.rxproperty.Nothing;
 import jp.keita.kagurazaka.rxproperty.ReadOnlyRxProperty;
 import jp.keita.kagurazaka.rxproperty.RxCommand;
@@ -20,38 +18,17 @@ public class JavaBasicsViewModel extends BasicsViewModel {
 
     public JavaBasicsViewModel() {
         input = new RxProperty<>("")
-                .setValidator(new Function<String, String>() {
-                    @Override
-                    public String apply(String it) {
-                        return (TextUtils.isEmpty(it)) ? "Text must not be empty!" : null;
-                    }
-                }, false);
+                .setValidator(it -> TextUtils.isEmpty(it) ? "Text must not be empty!" : null);
 
         output = new ReadOnlyRxProperty<>(
-                input.map(new Function<String, String>() {
-                    @Override
-                    public String apply(String it) {
-                        return it == null ? "" : it.toUpperCase();
-                    }
-                })
+                input.map(it -> it == null ? "" : it.toUpperCase())
         );
 
         final Observable<Boolean> inputHasNoErrorsStream = input.onHasErrorsChanged()
-                .map(new Function<Boolean, Boolean>() {
-                    @Override
-                    public Boolean apply(Boolean hasError) {
-                        return !hasError;
-                    }
-                })
-                .skip(1);
+                .map(hasError -> !hasError);
         command = new RxCommand<>(inputHasNoErrorsStream, false);
 
-        final Disposable commandDisposable = command.subscribe(new Consumer<Nothing>() {
-            @Override
-            public void accept(Nothing value) {
-                input.set("clicked!");
-            }
-        });
+        final Disposable commandDisposable = command.subscribe(value -> input.set("clicked!"));
 
         addDisposables(input, output, command, commandDisposable);
     }

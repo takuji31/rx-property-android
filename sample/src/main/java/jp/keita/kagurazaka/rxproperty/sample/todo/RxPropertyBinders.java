@@ -6,7 +6,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
 
-import io.reactivex.functions.Cancellable;
 import jp.keita.kagurazaka.rxproperty.RxProperty;
 
 /**
@@ -40,11 +39,6 @@ public class RxPropertyBinders {
             }
         };
         property.getValue().addOnPropertyChangedCallback(callback);
-        property.setCancellable(new Cancellable() {
-            @Override
-            public void cancel() throws Exception {
-                property.getValue().removeOnPropertyChangedCallback(callback);
-            }
-        });
+        property.setCancellable(() -> property.getValue().removeOnPropertyChangedCallback(callback));
     }
 }

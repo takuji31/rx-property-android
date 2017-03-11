@@ -21,20 +21,10 @@ public class MainViewModel extends ViewModelBase {
         final WeakReference<Activity> ref = new WeakReference<>(activity);
 
         final Disposable d1 = goToBasicsCommand
-                .subscribe(new Consumer<Nothing>() {
-                    @Override
-                    public void accept(Nothing value) {
-                        startActivity(ref, BasicsActivity.class);
-                    }
-                });
+                .subscribe(value -> startActivity(ref, BasicsActivity.class));
 
         final Disposable d2 = goToTodoCommand
-                .subscribe(new Consumer<Nothing>() {
-                    @Override
-                    public void accept(Nothing value) {
-                        startActivity(ref, TodoActivity.class);
-                    }
-                });
+                .subscribe(value -> startActivity(ref, TodoActivity.class));
 
         addDisposables(goToBasicsCommand, goToTodoCommand, d1, d2);
     }

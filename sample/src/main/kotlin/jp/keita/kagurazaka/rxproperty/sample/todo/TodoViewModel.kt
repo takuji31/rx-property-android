@@ -24,7 +24,7 @@ class TodoViewModel : ViewModelBase() {
             .toRxCommand<Nothing>(false)
             .asManaged()
 
-    val deleteDoneCommand: RxCommand<Void> = RxCommand()
+    val deleteDoneCommand: RxCommand<Any> = RxCommand()
 
     init {
         val updateTodoList: (Int) -> Unit = {

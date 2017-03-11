@@ -3,10 +3,8 @@ package jp.keita.kagurazaka.rxproperty.sample;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.widget.Button;
 
-import io.reactivex.functions.Cancellable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import jp.keita.kagurazaka.rxproperty.Nothing;
@@ -26,19 +24,9 @@ public class MainActivity extends AppCompatActivity {
         // You can bind trigger observable instead of using "rxCommandOnClick" on layout xml.
         final Button goToTodoButton = binding.buttonGoToTodo;
         final Subject<Nothing> emitter = PublishSubject.create();
-        goToTodoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                emitter.onNext(Nothing.INSTANCE);
-            }
-        });
+        goToTodoButton.setOnClickListener(view -> emitter.onNext(Nothing.INSTANCE));
         viewModel.goToTodoCommand.bindTrigger(emitter);
-        viewModel.goToTodoCommand.setCancellable(new Cancellable() {
-            @Override
-            public void cancel() throws Exception {
-                goToTodoButton.setOnClickListener(null);
-            }
-        });
+        viewModel.goToTodoCommand.setCancellable(() -> goToTodoButton.setOnClickListener(null));
 
         binding.setViewModel(viewModel);
     }

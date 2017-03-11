@@ -4,6 +4,7 @@ import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
+import com.jakewharton.rxbinding2.view.RxMenuItem
 import jp.keita.kagurazaka.rxproperty.sample.BR
 import jp.keita.kagurazaka.rxproperty.sample.R
 import jp.keita.kagurazaka.rxproperty.sample.databinding.ActivityTodoBinding
@@ -26,7 +27,7 @@ class TodoActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val inflater = menuInflater
         inflater.inflate(R.menu.menu_todo, menu)
-        // viewModel.deleteDoneCommand.bindTrigger(RxMenuItem.clicks(menu.findItem(R.id.clear_done)))
+        viewModel.deleteDoneCommand.bindTrigger(RxMenuItem.clicks(menu.findItem(R.id.clear_done)))
         return true
     }
 }

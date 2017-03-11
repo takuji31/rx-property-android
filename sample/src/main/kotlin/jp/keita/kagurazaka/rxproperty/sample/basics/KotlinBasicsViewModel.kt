@@ -9,7 +9,7 @@ import jp.keita.kagurazaka.rxproperty.toRxCommand
 
 class KotlinBasicsViewModel : BasicsViewModel() {
     override val input: RxProperty<String> = RxProperty("")
-            .setValidator({ if (it.isNullOrEmpty()) "Text must not be empty!" else null }, false)
+            .setValidator { if (it.isNullOrEmpty()) "Text must not be empty!" else null }
             .asManaged()
 
     override val output: ReadOnlyRxProperty<String> = input
@@ -19,13 +19,10 @@ class KotlinBasicsViewModel : BasicsViewModel() {
 
     override val command: RxCommand<Nothing> = input.onHasErrorsChanged()
             .map { it -> !it }
-            .skip(1)
             .toRxCommand<Nothing>(false)
             .asManaged()
 
     init {
-        command.subscribe {
-            input.set("clicked!")
-        }.asManaged()
+        command.subscribe { input.set("clicked!") }.asManaged()
     }
 }

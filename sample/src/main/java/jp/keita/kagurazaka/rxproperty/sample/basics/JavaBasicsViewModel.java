@@ -21,7 +21,7 @@ public class JavaBasicsViewModel extends BasicsViewModel {
                 .setValidator(it -> TextUtils.isEmpty(it) ? "Text must not be empty!" : null);
 
         output = new ReadOnlyRxProperty<>(
-                input.map(it -> it == null ? "" : it.toUpperCase())
+                input.map(String::toUpperCase)
         );
 
         final Observable<Boolean> inputHasNoErrorsStream = input.onHasErrorsChanged()

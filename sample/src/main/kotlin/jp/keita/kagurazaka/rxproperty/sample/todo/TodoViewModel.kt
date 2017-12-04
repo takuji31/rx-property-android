@@ -13,7 +13,7 @@ class TodoViewModel : ViewModelBase() {
     val todoList: TodoList = TodoList()
     val todoListItem: ItemBinding<TodoItemViewModel> = ItemBinding.of(BR.todoListItemVM, R.layout.item_todo)
 
-    val viewModeIndex: RxProperty<Int?> = RxProperty<Int?>(0).asManaged()
+    val viewModeIndex: RxProperty<Int> = RxProperty(0).asManaged()
 
     val inputTodoItem: RxProperty<TodoItemViewModel>
             = RxProperty(TodoItemViewModel()).asManaged()
@@ -41,8 +41,7 @@ class TodoViewModel : ViewModelBase() {
                 .subscribe { viewModeIndex.get()?.let(updateTodoList) } // Not smart :(
                 .asManaged()
 
-        viewModeIndex.filter { it != null }
-                .map { it!! }
+        viewModeIndex
                 .subscribe { updateTodoList(it) }
                 .asManaged()
 

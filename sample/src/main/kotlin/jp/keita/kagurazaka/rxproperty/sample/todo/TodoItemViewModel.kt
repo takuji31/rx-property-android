@@ -11,9 +11,9 @@ class TodoItemViewModel constructor(
             = RxProperty(model.isDone, DISABLE_RAISE_ON_SUBSCRIBE)
             .asManaged()
 
-    val title: RxProperty<String?>
+    val title: RxProperty<String>
             = RxProperty(model.title)
-            .setValidator { if (it.isNullOrBlank()) "Blank isn't allowed." else null }
+            .setValidator { if (it.isBlank()) "Blank isn't allowed." else null }
             .asManaged()
 
     val onHasErrorChanged: Observable<Boolean>

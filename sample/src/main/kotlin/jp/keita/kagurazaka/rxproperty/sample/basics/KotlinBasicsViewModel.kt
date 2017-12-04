@@ -1,19 +1,15 @@
 package jp.keita.kagurazaka.rxproperty.sample.basics
 
+import jp.keita.kagurazaka.rxproperty.*
 import jp.keita.kagurazaka.rxproperty.Nothing
-import jp.keita.kagurazaka.rxproperty.ReadOnlyRxProperty
-import jp.keita.kagurazaka.rxproperty.RxCommand
-import jp.keita.kagurazaka.rxproperty.RxProperty
-import jp.keita.kagurazaka.rxproperty.toReadOnlyRxProperty
-import jp.keita.kagurazaka.rxproperty.toRxCommand
 
 class KotlinBasicsViewModel : BasicsViewModel() {
     override val input: RxProperty<String> = RxProperty("")
-            .setValidator { if (it.isNullOrEmpty()) "Text must not be empty!" else null }
+            .setValidator { if (it.isEmpty()) "Text must not be empty!" else null }
             .asManaged()
 
     override val output: ReadOnlyRxProperty<String> = input
-            .map { it?.toUpperCase() ?: "" }
+            .map(String::toUpperCase)
             .toReadOnlyRxProperty()
             .asManaged()
 

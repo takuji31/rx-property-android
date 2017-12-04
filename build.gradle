@@ -1,7 +1,8 @@
 buildscript {
-    ext.android_plugin_version = '2.3.0'
+    ext.android_plugin_version = '3.0.1'
     ext.kotlin_version = '1.1.0'
     repositories {
+        google()
         jcenter()
     }
     dependencies {
@@ -14,6 +15,7 @@ buildscript {
 
 subprojects {
     repositories {
+        google()
         jcenter()
     }
 

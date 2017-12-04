@@ -53,9 +53,9 @@ dependencies {
     implementation project(':rx-property')
     implementation project(':rx-property-kotlin')
 
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.1.0'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.2.0'
 
-    kapt 'com.android.databinding:compiler:2.3.0'
+    kapt "com.android.databinding:compiler:$android_plugin_version"
 
     implementation 'com.android.support:appcompat-v7:25.2.0'
     implementation 'com.android.support:design:25.2.0'

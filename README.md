@@ -40,9 +40,7 @@ public class ViewModel {
     input = new RxProperty<>("")
         .setValidator(it -> TextUtils.isEmpty(it) ? "Text must not be empty!" : null);
 
-    output = new ReadOnlyRxProperty<>(
-        input.map(it -> it == null ? "" : it.toUpperCase())
-    );
+    output = new ReadOnlyRxProperty<>(input.map(String::toUpperCase));
 
     command = new RxCommand<>(input.onHasErrorsChanged().map(it -> !it));
     command.subscribe(it -> { input.set("clicked!"); });
@@ -168,8 +166,7 @@ class ViewModel {
     val input = RxProperty("")
             .setValidator { if (TextUtils.isEmpty(it)) "Text must not be empty!" else null }
 
-    val output = input.map { it?.toUpperCase() ?: "" }
-            .toReadOnlyRxProperty()
+    val output = input.map(String::toUpperCase).toReadOnlyRxProperty()
 
     val command = input.onHasErrorsChanged()
             .map { !it }

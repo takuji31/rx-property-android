@@ -9,7 +9,7 @@
             name="todoVM"
             type="jp.keita.kagurazaka.rxproperty.sample.todo.TodoViewModel"/>
 
-        <import type="me.tatarka.bindingcollectionadapter.LayoutManagers"/>
+        <import type="me.tatarka.bindingcollectionadapter2.LayoutManagers"/>
     </data>
 
     <RelativeLayout
@@ -74,7 +74,7 @@
             android:layout_below="@id/spinner_view_mode"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
-            app:itemView="@{todoVM.todoListItem}"
+            app:itemBinding="@{todoVM.todoListItem}"
             app:items="@{todoVM.todoList}"
             app:layoutManager="@{LayoutManagers.linear()}">
         </android.support.v7.widget.RecyclerView>

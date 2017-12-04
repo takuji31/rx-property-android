@@ -7,11 +7,11 @@ import jp.keita.kagurazaka.rxproperty.sample.BR
 import jp.keita.kagurazaka.rxproperty.sample.R
 import jp.keita.kagurazaka.rxproperty.sample.ViewModelBase
 import jp.keita.kagurazaka.rxproperty.toRxCommand
-import me.tatarka.bindingcollectionadapter.ItemView
+import me.tatarka.bindingcollectionadapter2.ItemBinding
 
 class TodoViewModel : ViewModelBase() {
     val todoList: TodoList = TodoList()
-    val todoListItem: ItemView = ItemView.of(BR.todoListItemVM, R.layout.item_todo)
+    val todoListItem: ItemBinding<TodoItemViewModel> = ItemBinding.of(BR.todoListItemVM, R.layout.item_todo)
 
     val viewModeIndex: RxProperty<Int?> = RxProperty<Int?>(0).asManaged()
 

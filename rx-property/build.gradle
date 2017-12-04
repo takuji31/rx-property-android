@@ -1,18 +1,12 @@
-buildscript {
-    dependencies {
-        classpath rootProject.ext.androidPlugin
-    }
-}
-
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
 
     defaultConfig {
-        minSdkVersion rootProject.ext.minSdkVersion
+        minSdkVersion versions.minSdk
     }
 
     compileOptions {
@@ -31,8 +25,8 @@ android {
 }
 
 dependencies {
-    compile rootProject.ext.rxJava
+    compile "io.reactivex.rxjava2:rxjava:${versions.rxJava}"
 
-    testCompile rootProject.ext.jUnit
-    testCompile rootProject.ext.mockito
+    testCompile "junit:junit:${versions.jUnit}"
+    testCompile "org.mockito:mockito-core:${versions.mockito}"
 }

@@ -1,16 +1,18 @@
-apply from: rootProject.file('dependencies.gradle')
+buildscript {
+    ext.android_plugin_version = '2.3.0'
+    ext.kotlin_version = '1.1.0'
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:$android_plugin_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'me.tatarka:gradle-retrolambda:3.6.0'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+    }
+}
 
 subprojects {
-    buildscript {
-        repositories {
-            jcenter()
-        }
-
-        dependencies {
-            classpath rootProject.ext.androidMavenGradlePlugin
-        }
-    }
-
     repositories {
         jcenter()
     }
@@ -22,3 +24,12 @@ subprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+ext.versions = [
+        minSdk    : 15,
+        compileSdk: 25,
+        buildTools: '27.0.1',
+        rxJava    : '2.0.7',
+        jUnit     : '4.12',
+        mockito   : '1.10.19'
+]

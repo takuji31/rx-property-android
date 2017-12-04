@@ -1,20 +1,13 @@
-buildscript {
-    dependencies {
-        classpath rootProject.ext.androidPlugin
-        classpath rootProject.ext.kotlinPlugin
-    }
-}
-
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'com.github.dcendents.android-maven'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
 
     defaultConfig {
-        minSdkVersion rootProject.ext.minSdkVersion
+        minSdkVersion versions.minSdk
     }
 
     compileOptions {
@@ -33,10 +26,10 @@ android {
 }
 
 dependencies {
-    compile rootProject.ext.kotlinStdlib
+    compile "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}"
 
     compile project(':rx-property')
-    compile rootProject.ext.rxJava
+    compile "io.reactivex.rxjava2:rxjava:${versions.rxJava}"
 
-    testCompile rootProject.ext.jUnit
+    testCompile "junit:junit:${versions.jUnit}"
 }

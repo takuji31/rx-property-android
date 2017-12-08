@@ -298,12 +298,13 @@ public class RxProperty<T>
     }
 
     /**
-     * Gets the latest value of this {@code RxProperty}.
+     * Gets the latest value of this {@code RxProperty} or null.
      *
-     * @return the latest value stored in this {@code RxProperty}
+     * @return the latest value stored in this {@code RxProperty} or null if it has not been
+     * initialized
      */
     @Nullable
-    public T get() {
+    public T getOrNull() {
         return valueField.get();
     }
 
@@ -523,14 +524,14 @@ public class RxProperty<T>
      * bound view. This method ignores {@link Mode#DISTINCT_UNTIL_CHANGED}.
      */
     public void forceNotify() {
-        valueField.set(get(), true);
+        valueField.set(getOrNull(), true);
     }
 
     /**
      * Invoke validation process.
      */
     public void forceValidate() {
-        T latestValue = get();
+        T latestValue = getOrNull();
         if (latestValue != null) {
             validationTrigger.onNext(latestValue);
         }
@@ -589,7 +590,7 @@ public class RxProperty<T>
             return;
         }
 
-        if (isDistinctUntilChanged && Helper.compare(value, get())) {
+        if (isDistinctUntilChanged && Helper.compare(value, getOrNull())) {
             return;
         }
         valueField.set(value, viewUpdate);
@@ -606,7 +607,7 @@ public class RxProperty<T>
 
     /**
      * @deprecated This is a magic method for Data Binding. Don't call it in your code. To get the
-     * latest value of this property, use {@link RxProperty#get()} instead of this method.
+     * latest value of this property, use {@link RxProperty#getOrNull()} instead of this method.
      */
     @Deprecated
     public ObservableField<T> getValue() {

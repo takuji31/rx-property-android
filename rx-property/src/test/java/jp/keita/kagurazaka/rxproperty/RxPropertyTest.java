@@ -1062,7 +1062,7 @@ public class RxPropertyTest {
         }
     }
 
-    public static class Get {
+    public static class GetOrNull {
         private RxProperty<String> property;
 
         @After
@@ -1079,7 +1079,7 @@ public class RxPropertyTest {
             property = new RxProperty<>();
 
             // then
-            assertThat(property.get(), is((String) null));
+            assertThat(property.getOrNull(), is((String) null));
         }
 
         @Test
@@ -1088,7 +1088,7 @@ public class RxPropertyTest {
             property = new RxProperty<>("RxProperty");
 
             // then
-            assertThat(property.get(), is("RxProperty"));
+            assertThat(property.getOrNull(), is("RxProperty"));
         }
 
         @Test
@@ -1100,7 +1100,7 @@ public class RxPropertyTest {
             property.set("New value");
 
             // then
-            assertThat(property.get(), is("New value"));
+            assertThat(property.getOrNull(), is("New value"));
         }
 
         @Test
@@ -1110,7 +1110,7 @@ public class RxPropertyTest {
             property = new RxProperty<>(source);
 
             // then
-            assertThat(property.get(), is((String) null));
+            assertThat(property.getOrNull(), is((String) null));
         }
 
         @Test
@@ -1123,7 +1123,7 @@ public class RxPropertyTest {
             source.onNext("Value by source");
 
             // then
-            assertThat(property.get(), is("Value by source"));
+            assertThat(property.getOrNull(), is("Value by source"));
         }
     }
 
@@ -1762,7 +1762,7 @@ public class RxPropertyTest {
                 new Function<RxProperty<T>, T>() {
                     @Override
                     public T apply(RxProperty<T> property) throws Exception {
-                        return property.get();
+                        return property.getOrNull();
                     }
                 })
                 .test();

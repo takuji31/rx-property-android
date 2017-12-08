@@ -476,7 +476,7 @@ public class ReadOnlyRxPropertyTest {
         }
     }
 
-    public static class Get {
+    public static class GetOrNull {
         private Subject<String> source;
         private ReadOnlyRxProperty<String> property;
 
@@ -499,7 +499,7 @@ public class ReadOnlyRxPropertyTest {
             property = new ReadOnlyRxProperty<>(source);
 
             // then
-            assertThat(property.get(), is((String) null));
+            assertThat(property.getOrNull(), is((String) null));
         }
 
         @Test
@@ -508,7 +508,7 @@ public class ReadOnlyRxPropertyTest {
             property = new ReadOnlyRxProperty<>(source, "ReadOnlyRxProperty");
 
             // then
-            assertThat(property.get(), is("ReadOnlyRxProperty"));
+            assertThat(property.getOrNull(), is("ReadOnlyRxProperty"));
         }
 
         @Test
@@ -520,7 +520,7 @@ public class ReadOnlyRxPropertyTest {
             source.onNext("Value by source");
 
             // then
-            assertThat(property.get(), is("Value by source"));
+            assertThat(property.getOrNull(), is("Value by source"));
         }
     }
 
@@ -679,7 +679,7 @@ public class ReadOnlyRxPropertyTest {
                 new Function<ReadOnlyRxProperty<T>, T>() {
                     @Override
                     public T apply(ReadOnlyRxProperty<T> property) throws Exception {
-                        return property.get();
+                        return property.getOrNull();
                     }
                 })
                 .test();

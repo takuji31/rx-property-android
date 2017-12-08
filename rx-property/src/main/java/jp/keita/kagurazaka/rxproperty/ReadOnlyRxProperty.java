@@ -142,12 +142,13 @@ public class ReadOnlyRxProperty<T>
     }
 
     /**
-     * Gets the latest value of this {@code ReadOnlyRxProperty}.
+     * Gets the latest value of this {@code ReadOnlyRxProperty} or null.
      *
-     * @return the latest value stored in this {@code ReadOnlyRxProperty}
+     * @return the latest value stored in this {@code ReadOnlyRxProperty} or null if it has not
+     * been initialized
      */
     @Nullable
-    public T get() {
+    public T getOrNull() {
         return valueField.get();
     }
 
@@ -156,7 +157,7 @@ public class ReadOnlyRxProperty<T>
      * including the bound view. This method ignores {@link RxProperty.Mode#DISTINCT_UNTIL_CHANGED}.
      */
     public void forceNotify() {
-        valueField.setValue(get());
+        valueField.setValue(getOrNull());
     }
 
     /**
@@ -209,7 +210,7 @@ public class ReadOnlyRxProperty<T>
             return;
         }
 
-        if (isDistinctUntilChanged && Helper.compare(value, get())) {
+        if (isDistinctUntilChanged && Helper.compare(value, getOrNull())) {
             return;
         }
         valueField.setValue(value);
@@ -217,7 +218,7 @@ public class ReadOnlyRxProperty<T>
 
     /**
      * @deprecated This is a magic method for Data Binding. Don't call it in your code. To get the
-     * latest value of this property, use {@link ReadOnlyRxProperty#get()} instead of this method.
+     * latest value of this property, use {@link ReadOnlyRxProperty#getOrNull()} instead of this method.
      */
     @Deprecated
     public ObservableField<T> getValue() {

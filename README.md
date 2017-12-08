@@ -34,7 +34,7 @@ which is abstraction of user manipulation.
 public class ViewModel {
   public final RxProperty<String> input;
   public final ReadOnlyRxProperty<String> output;
-  public final RxCommand<Nothing> command;
+  public final RxCommand<NoParameter> command;
 
   public JavaViewModel() {
     input = new RxProperty<>("")
@@ -170,7 +170,7 @@ class ViewModel {
 
     val command = input.onHasErrorsChanged()
             .map { !it }
-            .toRxCommand<Nothing>()
+            .toRxCommand<NoParameter>()
 
     val person = Person("John", "Smith")
     val firstName = person.observeProperty(BR.firstName) { it.firstName }

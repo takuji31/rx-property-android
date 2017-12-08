@@ -82,6 +82,22 @@ public class RxProperty<T>
         String summarizeErrorMessages(@NonNull final List<String> errorMessages);
     }
 
+    /**
+     * Interface representing a simple validator to test the value of {@link RxProperty}.
+     *
+     * @param <T> the type of {@link RxProperty}
+     */
+    public interface SimpleValidator<T> {
+        /**
+         * Validates the specified value.
+         *
+         * @param value a value to be tested
+         * @return an error message if validation failed; otherwise null
+         */
+        @Nullable
+        String validate(@NonNull final T value);
+    }
+
     private final boolean isDistinctUntilChanged;
 
     // for value emitter
@@ -386,7 +402,7 @@ public class RxProperty<T>
      * @param validator a validator to test the value of this {@code RxProperty}
      * @return this instance
      */
-    public RxProperty<T> setValidator(@Nullable final Function<T, String> validator) {
+    public RxProperty<T> setValidator(@Nullable final SimpleValidator<T> validator) {
         return setValidator(validator, true);
     }
 
@@ -400,7 +416,7 @@ public class RxProperty<T>
      * @return this instance
      */
     public RxProperty<T> setValidator(
-            @Nullable final Function<T, String> validator,
+            @Nullable final SimpleValidator<T> validator,
             boolean validateNow) {
         if (validator == null) {
             return setValidator((Validator<T>) null, validateNow);
@@ -412,7 +428,7 @@ public class RxProperty<T>
             public List<String> validate(@NonNull final T value) {
                 String message;
                 try {
-                    message = validator.apply(value);
+                    message = validator.validate(value);
                 } catch (Exception e) {
                     message = e.getLocalizedMessage();
                 }

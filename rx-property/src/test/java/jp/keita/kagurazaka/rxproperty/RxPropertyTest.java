@@ -28,8 +28,9 @@ import io.reactivex.subjects.Subject;
 import jp.keita.kagurazaka.rxproperty.util.RxPropertyErrorObserver;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @RunWith(Enclosed.class)
 @SuppressWarnings("deprecation")
@@ -1449,7 +1450,7 @@ public class RxPropertyTest {
 
             // when
             property.set("");
-            property.setValidator((Function<String, String>) null);
+            property.setValidator((RxProperty.SimpleValidator<String>) null);
             property.set("");
 
             // then
@@ -1517,9 +1518,10 @@ public class RxPropertyTest {
         @Test
         public void failValidationWhenFunctionValidatorThrowsException() {
             // given
-            property.setValidator(new Function<String, String>() {
+            property.setValidator(new RxProperty.SimpleValidator<String>() {
+                @Nullable
                 @Override
-                public String apply(String s) throws Exception {
+                public String validate(@NonNull String value) {
                     throw new IllegalStateException("Exception occurred.");
                 }
             });
@@ -1743,10 +1745,11 @@ public class RxPropertyTest {
         }
     }
 
-    private static Function<String, String> EMPTY_FUNCTION_VALIDATOR
-            = new Function<String, String>() {
+    private static RxProperty.SimpleValidator<String> EMPTY_FUNCTION_VALIDATOR
+            = new RxProperty.SimpleValidator<String>() {
+        @Nullable
         @Override
-        public String apply(String value) throws Exception {
+        public String validate(@NonNull String value) {
             if (value.isEmpty()) {
                 return "Value must not be empty.";
             }

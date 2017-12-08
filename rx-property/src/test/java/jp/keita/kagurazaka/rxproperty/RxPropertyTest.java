@@ -1127,6 +1127,54 @@ public class RxPropertyTest {
         }
     }
 
+    public static class Get {
+        @Rule
+        public ExpectedException thrown = ExpectedException.none();
+
+        private RxProperty<String> property;
+
+        @After
+        public void tearDown() {
+            if (property != null) {
+                property.dispose();
+                property = null;
+            }
+        }
+
+        @Test
+        public void raisesNPEWhenCreateWithoutArguments() {
+            thrown.expect(NullPointerException.class);
+            thrown.expectMessage("This RxProperty has not been initialized.");
+
+            // given
+            property = new RxProperty<>();
+
+            // when
+            property.get();
+        }
+
+        @Test
+        public void returnsSpecifiedValueWhenCreateWithInitialValue() {
+            // given
+            property = new RxProperty<>("RxProperty");
+
+            // then
+            assertThat(property.get(), is("RxProperty"));
+        }
+
+        @Test
+        public void returnsSetValue() {
+            // given
+            property = new RxProperty<>("RxProperty");
+
+            // when
+            property.set("New value");
+
+            // then
+            assertThat(property.get(), is("New value"));
+        }
+    }
+
     public static class IsDisposed {
         private RxProperty<String> property;
 

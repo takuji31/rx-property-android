@@ -142,6 +142,21 @@ public class ReadOnlyRxProperty<T>
     }
 
     /**
+     * Gets the latest value of this {@code ReadOnlyRxProperty}.
+     *
+     * @return the latest value stored in this {@code ReadOnlyRxProperty}
+     * @throws NullPointerException if this {@code ReadOnlyRxProperty} has not been initialized
+     */
+    @NonNull
+    public T get() {
+        T value = getOrNull();
+        if (value == null) {
+            throw new NullPointerException("This ReadOnlyRxProperty has not been initialized.");
+        }
+        return value;
+    }
+
+    /**
      * Gets the latest value of this {@code ReadOnlyRxProperty} or null.
      *
      * @return the latest value stored in this {@code ReadOnlyRxProperty} or null if it has not
@@ -218,7 +233,7 @@ public class ReadOnlyRxProperty<T>
 
     /**
      * @deprecated This is a magic method for Data Binding. Don't call it in your code. To get the
-     * latest value of this property, use {@link ReadOnlyRxProperty#getOrNull()} instead of this method.
+     * latest value of this property, use {@link ReadOnlyRxProperty#get()} instead of this method.
      */
     @Deprecated
     public ObservableField<T> getValue() {

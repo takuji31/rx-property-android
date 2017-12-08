@@ -38,7 +38,7 @@ class TodoViewModel : ViewModelBase() {
         }
 
         TodoRepository.onChanged
-                .subscribe { viewModeIndex.getOrNull()?.let(updateTodoList) } // Not smart :(
+                .subscribe { updateTodoList(viewModeIndex.get()) } // Not smart :(
                 .asManaged()
 
         viewModeIndex
@@ -46,7 +46,7 @@ class TodoViewModel : ViewModelBase() {
                 .asManaged()
 
         addCommand.subscribe {
-            inputTodoItem.getOrNull()?.let {
+            inputTodoItem.get().let {
                 TodoRepository.store(it.model)
                 it.dispose()
                 inputTodoItem.set(TodoItemViewModel())

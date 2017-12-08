@@ -19,8 +19,9 @@ import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @RunWith(Enclosed.class)
 @SuppressWarnings("deprecation")
@@ -521,6 +522,60 @@ public class ReadOnlyRxPropertyTest {
 
             // then
             assertThat(property.getOrNull(), is("Value by source"));
+        }
+    }
+
+    public static class Get {
+        @Rule
+        public ExpectedException thrown = ExpectedException.none();
+
+        private Subject<String> source;
+        private ReadOnlyRxProperty<String> property;
+
+        @Before
+        public void setUp() {
+            source = PublishSubject.create();
+        }
+
+        @After
+        public void tearDown() {
+            if (property != null) {
+                property.dispose();
+                property = null;
+            }
+        }
+
+        @Test
+        public void raisesNPEWhenCreateWithSourceObservableThatNeverEmitsValues() {
+            thrown.expect(NullPointerException.class);
+            thrown.expectMessage("This ReadOnlyRxProperty has not been initialized.");
+
+            // given
+            property = new ReadOnlyRxProperty<>(source);
+
+            // when
+            property.get();
+        }
+
+        @Test
+        public void returnsSpecifiedValueWhenCreateWithInitialValue() {
+            // given
+            property = new ReadOnlyRxProperty<>(source, "ReadOnlyRxProperty");
+
+            // then
+            assertThat(property.get(), is("ReadOnlyRxProperty"));
+        }
+
+        @Test
+        public void followsSourceObservable() {
+            // given
+            property = new ReadOnlyRxProperty<>(source);
+
+            // when
+            source.onNext("Value by source");
+
+            // then
+            assertThat(property.get(), is("Value by source"));
         }
     }
 

@@ -1,7 +1,7 @@
 package jp.keita.kagurazaka.rxproperty.sample.basics
 
 import jp.keita.kagurazaka.rxproperty.*
-import jp.keita.kagurazaka.rxproperty.Nothing
+import jp.keita.kagurazaka.rxproperty.NoParameter
 
 class KotlinBasicsViewModel : BasicsViewModel() {
     override val input: RxProperty<String> = RxProperty("")
@@ -13,9 +13,9 @@ class KotlinBasicsViewModel : BasicsViewModel() {
             .toReadOnlyRxProperty()
             .asManaged()
 
-    override val command: RxCommand<Nothing> = input.onHasErrorsChanged()
+    override val command: RxCommand<NoParameter> = input.onHasErrorsChanged()
             .map { it -> !it }
-            .toRxCommand<Nothing>(false)
+            .toRxCommand<NoParameter>(false)
             .asManaged()
 
     init {

@@ -9,7 +9,7 @@ import io.reactivex.functions.Cancellable;
 @SuppressWarnings("deprecation")
 public final class RxCommandBinders {
     @BindingAdapter("rxCommandOnClick")
-    public static void setOnClick(final View view, final RxCommand<Nothing> command) {
+    public static void setOnClick(final View view, final RxCommand<NoParameter> command) {
         // Set initial state.
         view.setEnabled(command.canExecute());
 
@@ -18,7 +18,7 @@ public final class RxCommandBinders {
             @Override
             public void onClick(View v) {
                 if (command.canExecute()) {
-                    command.execute(Nothing.INSTANCE);
+                    command.execute(NoParameter.INSTANCE);
                 }
             }
         });

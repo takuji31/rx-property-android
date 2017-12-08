@@ -1,6 +1,6 @@
 package jp.keita.kagurazaka.rxproperty.sample.todo
 
-import jp.keita.kagurazaka.rxproperty.Nothing
+import jp.keita.kagurazaka.rxproperty.NoParameter
 import jp.keita.kagurazaka.rxproperty.RxCommand
 import jp.keita.kagurazaka.rxproperty.RxProperty
 import jp.keita.kagurazaka.rxproperty.sample.BR
@@ -18,10 +18,10 @@ class TodoViewModel : ViewModelBase() {
     val inputTodoItem: RxProperty<TodoItemViewModel>
             = RxProperty(TodoItemViewModel()).asManaged()
 
-    val addCommand: RxCommand<Nothing> = inputTodoItem
+    val addCommand: RxCommand<NoParameter> = inputTodoItem
             .switchMap { it.onHasErrorChanged }
             .map { !it }
-            .toRxCommand<Nothing>(false)
+            .toRxCommand<NoParameter>(false)
             .asManaged()
 
     val deleteDoneCommand: RxCommand<Any> = RxCommand()

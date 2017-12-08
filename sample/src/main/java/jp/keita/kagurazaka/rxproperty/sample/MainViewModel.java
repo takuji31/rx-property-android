@@ -6,16 +6,15 @@ import android.content.Intent;
 import java.lang.ref.WeakReference;
 
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
-import jp.keita.kagurazaka.rxproperty.Nothing;
+import jp.keita.kagurazaka.rxproperty.NoParameter;
 import jp.keita.kagurazaka.rxproperty.RxCommand;
 import jp.keita.kagurazaka.rxproperty.sample.basics.BasicsActivity;
 import jp.keita.kagurazaka.rxproperty.sample.todo.TodoActivity;
 
 public class MainViewModel extends ViewModelBase {
-    public final RxCommand<Nothing> goToBasicsCommand = new RxCommand<>();
+    public final RxCommand<NoParameter> goToBasicsCommand = new RxCommand<>();
 
-    public final RxCommand<Nothing> goToTodoCommand = new RxCommand<>();
+    public final RxCommand<NoParameter> goToTodoCommand = new RxCommand<>();
 
     public MainViewModel(final Activity activity) {
         final WeakReference<Activity> ref = new WeakReference<>(activity);

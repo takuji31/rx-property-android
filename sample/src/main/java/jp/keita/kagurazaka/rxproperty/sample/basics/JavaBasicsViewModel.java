@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
-import jp.keita.kagurazaka.rxproperty.Nothing;
+import jp.keita.kagurazaka.rxproperty.NoParameter;
 import jp.keita.kagurazaka.rxproperty.ReadOnlyRxProperty;
 import jp.keita.kagurazaka.rxproperty.RxCommand;
 import jp.keita.kagurazaka.rxproperty.RxProperty;
@@ -14,7 +14,7 @@ import jp.keita.kagurazaka.rxproperty.RxProperty;
 public class JavaBasicsViewModel extends BasicsViewModel {
     private final RxProperty<String> input;
     private final ReadOnlyRxProperty<String> output;
-    private final RxCommand<Nothing> command;
+    private final RxCommand<NoParameter> command;
 
     public JavaBasicsViewModel() {
         input = new RxProperty<>("")
@@ -47,7 +47,7 @@ public class JavaBasicsViewModel extends BasicsViewModel {
 
     @NotNull
     @Override
-    public RxCommand<Nothing> getCommand() {
+    public RxCommand<NoParameter> getCommand() {
         return command;
     }
 }

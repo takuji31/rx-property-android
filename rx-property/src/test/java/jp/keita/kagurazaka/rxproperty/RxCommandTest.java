@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings("deprecation")
 public class RxCommandTest {
 
-    public static class NothingCommand {
+    public static class NoParameterCommand {
         Subject<Boolean> canExecuteSource;
 
         @Before
@@ -34,7 +34,7 @@ public class RxCommandTest {
         @Test
         public void canExecuteReturnsTrueWhenConstructWithoutArguments() {
             // when
-            RxCommand<Nothing> command = new RxCommand<>();
+            RxCommand<NoParameter> command = new RxCommand<>();
 
             // then
             assertThat(command.canExecute(), is(true));
@@ -46,7 +46,7 @@ public class RxCommandTest {
         @Test
         public void getEnabledReturnsTrueWhenConstructWithoutArguments() {
             // when
-            RxCommand<Nothing> command = new RxCommand<>();
+            RxCommand<NoParameter> command = new RxCommand<>();
 
             // then
             assertThat(command.getEnabled().get(), is(true));
@@ -58,7 +58,7 @@ public class RxCommandTest {
         @Test
         public void getEnabledEmitsNoValuesWhenConstructWithoutArguments() {
             // when
-            RxCommand<Nothing> command = new RxCommand<>();
+            RxCommand<NoParameter> command = new RxCommand<>();
 
             // then
             observableBooleanTestObserver(command)
@@ -72,7 +72,7 @@ public class RxCommandTest {
         @Test
         public void canExecuteInitiallyReturnsTrueWhenConstructWithSourceObservable() {
             // when
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource);
 
             // then
             assertThat(command.canExecute(), is(true));
@@ -84,7 +84,7 @@ public class RxCommandTest {
         @Test
         public void getEnabledInitiallyReturnsTrueWhenConstructWithSourceObservable() {
             // when
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource);
 
             // then
             assertThat(command.getEnabled().get(), is(true));
@@ -96,7 +96,7 @@ public class RxCommandTest {
         @Test
         public void getEnabledEmitsNoValuesTrueWhenConstructWithSourceObservable() {
             // when
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource);
 
             // then
             observableBooleanTestObserver(command)
@@ -110,7 +110,7 @@ public class RxCommandTest {
         @Test
         public void canExecuteInitiallyReturnsSpecifiedValueWhenConstructWithInitialValue() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource, false);
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource, false);
 
             // then
             assertThat(command.canExecute(), is(false));
@@ -122,7 +122,7 @@ public class RxCommandTest {
         @Test
         public void getEnabledInitiallyReturnsSpecifiedValueWhenConstructWithInitialValue() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource, false);
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource, false);
 
             // then
             assertThat(command.getEnabled().get(), is(false));
@@ -134,7 +134,7 @@ public class RxCommandTest {
         @Test
         public void getEnabledEmitsNoValuesWhenConstructWithInitialValue() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource, false);
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource, false);
 
             // then
             observableBooleanTestObserver(command)
@@ -149,7 +149,7 @@ public class RxCommandTest {
         public void initialValueOfCanExecuteIsOverwrittenBySourceObservable() {
             // given
             Subject<Boolean> source = BehaviorSubject.createDefault(false);
-            RxCommand<Nothing> command = new RxCommand<>(source);
+            RxCommand<NoParameter> command = new RxCommand<>(source);
 
             // then
             assertThat(command.canExecute(), is(false));
@@ -162,7 +162,7 @@ public class RxCommandTest {
         public void initialValueOfGetEnabledIsOverwrittenBySourceObservable() {
             // given
             Subject<Boolean> source = BehaviorSubject.createDefault(false);
-            RxCommand<Nothing> command = new RxCommand<>(source);
+            RxCommand<NoParameter> command = new RxCommand<>(source);
 
             // then
             assertThat(command.getEnabled().get(), is(false));
@@ -175,7 +175,7 @@ public class RxCommandTest {
         public void getEnabledEmitsNoValuesWhenInitialValueIsOverwrittenBySourceObservable() {
             // given
             Subject<Boolean> source = BehaviorSubject.createDefault(false);
-            RxCommand<Nothing> command = new RxCommand<>(source);
+            RxCommand<NoParameter> command = new RxCommand<>(source);
 
             // then
             observableBooleanTestObserver(command)
@@ -189,7 +189,7 @@ public class RxCommandTest {
         @Test
         public void canExecuteFollowsSourceObservable() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource);
 
             // when
             canExecuteSource.onNext(false);
@@ -210,7 +210,7 @@ public class RxCommandTest {
         @Test
         public void getEnabledFollowsSourceObservable() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource);
             TestObserver<Boolean> testObserver = observableBooleanTestObserver(command);
 
             // when
@@ -230,8 +230,8 @@ public class RxCommandTest {
         @Test
         public void throwsErrorWhenSourceObservableEmitsError() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
-            TestObserver<Nothing> testObserver = command.test();
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource);
+            TestObserver<NoParameter> testObserver = command.test();
 
             // when
             canExecuteSource.onError(new RuntimeException("Error in the source observable"));
@@ -248,7 +248,7 @@ public class RxCommandTest {
         @Test
         public void autoDisposedWhenSourceObservableEmitsError() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource);
 
             // when
             canExecuteSource.onError(new RuntimeException("Error in the source observable"));
@@ -260,8 +260,8 @@ public class RxCommandTest {
         @Test
         public void emitsOnCompleteWhenSourceObservableIsCompleted() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
-            TestObserver<Nothing> testObserver = command.test();
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource);
+            TestObserver<NoParameter> testObserver = command.test();
 
             // when
             canExecuteSource.onComplete();
@@ -277,7 +277,7 @@ public class RxCommandTest {
         @Test
         public void autoDisposedWhenSourceObservableIsCompleted() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource);
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource);
 
             // when
             canExecuteSource.onComplete();
@@ -289,16 +289,16 @@ public class RxCommandTest {
         @Test
         public void emitsNothingWhenExecutes() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>();
-            TestObserver<Nothing> testObserver = command.test();
+            RxCommand<NoParameter> command = new RxCommand<>();
+            TestObserver<NoParameter> testObserver = command.test();
 
             // when
-            command.execute(Nothing.INSTANCE);
-            command.execute(Nothing.INSTANCE);
+            command.execute(NoParameter.INSTANCE);
+            command.execute(NoParameter.INSTANCE);
 
             // then
             testObserver.assertSubscribed()
-                    .assertValues(Nothing.INSTANCE, Nothing.INSTANCE)
+                    .assertValues(NoParameter.INSTANCE, NoParameter.INSTANCE)
                     .assertNoErrors()
                     .assertNotComplete()
                     .dispose();
@@ -310,15 +310,15 @@ public class RxCommandTest {
         @Test
         public void emitsNothingWhenExecutesAlthoughCanExecuteIsFalse() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>(canExecuteSource, false);
-            TestObserver<Nothing> testObserver = command.test();
+            RxCommand<NoParameter> command = new RxCommand<>(canExecuteSource, false);
+            TestObserver<NoParameter> testObserver = command.test();
 
             // when
-            command.execute(Nothing.INSTANCE);
+            command.execute(NoParameter.INSTANCE);
 
             // then
             testObserver.assertSubscribed()
-                    .assertValue(Nothing.INSTANCE)
+                    .assertValue(NoParameter.INSTANCE)
                     .assertNoErrors()
                     .assertNotComplete()
                     .dispose();
@@ -330,17 +330,17 @@ public class RxCommandTest {
         @Test
         public void emitValueWhenBoundTriggerEmitsValue() {
             // given
-            Subject<Nothing> trigger = PublishSubject.create();
-            RxCommand<Nothing> command = new RxCommand<Nothing>()
+            Subject<NoParameter> trigger = PublishSubject.create();
+            RxCommand<NoParameter> command = new RxCommand<NoParameter>()
                     .bindTrigger(trigger);
-            TestObserver<Nothing> testObserver = command.test();
+            TestObserver<NoParameter> testObserver = command.test();
 
             // when
-            trigger.onNext(Nothing.INSTANCE);
+            trigger.onNext(NoParameter.INSTANCE);
 
             // then
             testObserver.assertSubscribed()
-                    .assertValue(Nothing.INSTANCE)
+                    .assertValue(NoParameter.INSTANCE)
                     .assertNoErrors()
                     .assertNotComplete()
                     .dispose();
@@ -352,10 +352,10 @@ public class RxCommandTest {
         @Test
         public void throwsErrorWhenBoundTriggerEmitsError() {
             // given
-            Subject<Nothing> trigger = PublishSubject.create();
-            RxCommand<Nothing> command = new RxCommand<Nothing>()
+            Subject<NoParameter> trigger = PublishSubject.create();
+            RxCommand<NoParameter> command = new RxCommand<NoParameter>()
                     .bindTrigger(trigger);
-            TestObserver<Nothing> testObserver = command.test();
+            TestObserver<NoParameter> testObserver = command.test();
 
             // when
             trigger.onError(new RuntimeException("Error in the trigger observable"));
@@ -372,8 +372,8 @@ public class RxCommandTest {
         @Test
         public void autoDisposedWhenBoundTriggerEmitsError() {
             // given
-            Subject<Nothing> trigger = PublishSubject.create();
-            RxCommand<Nothing> command = new RxCommand<Nothing>()
+            Subject<NoParameter> trigger = PublishSubject.create();
+            RxCommand<NoParameter> command = new RxCommand<NoParameter>()
                     .bindTrigger(trigger);
 
             // when
@@ -386,17 +386,17 @@ public class RxCommandTest {
         @Test
         public void emitsOnCompleteWhenBoundTriggerIsCompleted() {
             // given
-            Subject<Nothing> trigger = PublishSubject.create();
-            RxCommand<Nothing> command = new RxCommand<Nothing>()
+            Subject<NoParameter> trigger = PublishSubject.create();
+            RxCommand<NoParameter> command = new RxCommand<NoParameter>()
                     .bindTrigger(trigger);
-            TestObserver<Nothing> testObserver = command.test();
+            TestObserver<NoParameter> testObserver = command.test();
 
             // when
-            trigger.onNext(Nothing.INSTANCE);
+            trigger.onNext(NoParameter.INSTANCE);
             trigger.onComplete();
 
             // then
-            testObserver.assertResult(Nothing.INSTANCE)
+            testObserver.assertResult(NoParameter.INSTANCE)
                     .dispose();
 
             // after
@@ -406,8 +406,8 @@ public class RxCommandTest {
         @Test
         public void autoDisposedWhenBoundTriggerIsCompleted() {
             // given
-            Subject<Nothing> trigger = PublishSubject.create();
-            RxCommand<Nothing> command = new RxCommand<Nothing>()
+            Subject<NoParameter> trigger = PublishSubject.create();
+            RxCommand<NoParameter> command = new RxCommand<NoParameter>()
                     .bindTrigger(trigger);
 
             // when
@@ -420,21 +420,21 @@ public class RxCommandTest {
         @Test
         public void triggerBindingCanExecuteMoreThanOnce() {
             // given
-            Subject<Nothing> firstTrigger = PublishSubject.create();
-            Subject<Nothing> secondTrigger = PublishSubject.create();
-            RxCommand<Nothing> command = new RxCommand<>();
-            TestObserver<Nothing> testObserver = command.test();
+            Subject<NoParameter> firstTrigger = PublishSubject.create();
+            Subject<NoParameter> secondTrigger = PublishSubject.create();
+            RxCommand<NoParameter> command = new RxCommand<>();
+            TestObserver<NoParameter> testObserver = command.test();
 
             // when
             command.bindTrigger(firstTrigger);
-            firstTrigger.onNext(Nothing.INSTANCE);
+            firstTrigger.onNext(NoParameter.INSTANCE);
             command.bindTrigger(secondTrigger);
-            firstTrigger.onNext(Nothing.INSTANCE);
-            secondTrigger.onNext(Nothing.INSTANCE);
+            firstTrigger.onNext(NoParameter.INSTANCE);
+            secondTrigger.onNext(NoParameter.INSTANCE);
 
             // then
             testObserver.assertSubscribed()
-                    .assertValues(Nothing.INSTANCE, Nothing.INSTANCE)
+                    .assertValues(NoParameter.INSTANCE, NoParameter.INSTANCE)
                     .assertNoErrors()
                     .assertNotComplete()
                     .dispose();
@@ -446,8 +446,8 @@ public class RxCommandTest {
         @Test
         public void isDisposedReturnsTrueWhenDisposed() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>();
-            TestObserver<Nothing> testObserver = command.test();
+            RxCommand<NoParameter> command = new RxCommand<>();
+            TestObserver<NoParameter> testObserver = command.test();
 
             // when
             command.dispose();
@@ -462,8 +462,8 @@ public class RxCommandTest {
         @Test
         public void canDisposeMoreThanOnce() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>();
-            TestObserver<Nothing> testObserver = command.test();
+            RxCommand<NoParameter> command = new RxCommand<>();
+            TestObserver<NoParameter> testObserver = command.test();
 
             // when
             command.dispose();
@@ -480,22 +480,22 @@ public class RxCommandTest {
         @Test
         public void emitsOnCompleteWhenDisposed() {
             // given
-            RxCommand<Nothing> command = new RxCommand<>();
-            TestObserver<Nothing> testObserver = command.test();
+            RxCommand<NoParameter> command = new RxCommand<>();
+            TestObserver<NoParameter> testObserver = command.test();
 
             // when
-            command.execute(Nothing.INSTANCE);
+            command.execute(NoParameter.INSTANCE);
             command.dispose();
 
             // then
-            testObserver.assertResult(Nothing.INSTANCE)
+            testObserver.assertResult(NoParameter.INSTANCE)
                     .dispose();
         }
 
         @Test
         public void unbindViewWillBeExecutedWhenDisposed() throws Exception {
             // given
-            RxCommand<Nothing> command = new RxCommand<>();
+            RxCommand<NoParameter> command = new RxCommand<>();
             Cancellable mockCancellable = Mockito.mock(Cancellable.class);
             command.setCancellable(mockCancellable);
             verify(mockCancellable, never()).cancel();
@@ -510,7 +510,7 @@ public class RxCommandTest {
         @Test
         public void ignoreExceptionByUnbindView() throws Exception {
             // given
-            RxCommand<Nothing> command = new RxCommand<>();
+            RxCommand<NoParameter> command = new RxCommand<>();
             Cancellable mockCancellable = Mockito.mock(Cancellable.class);
             doThrow(new RuntimeException("Error in unbindView")).when(mockCancellable).cancel();
             command.setCancellable(mockCancellable);

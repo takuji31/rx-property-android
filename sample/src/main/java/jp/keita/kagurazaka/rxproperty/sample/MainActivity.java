@@ -7,7 +7,7 @@ import android.widget.Button;
 
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
-import jp.keita.kagurazaka.rxproperty.Nothing;
+import jp.keita.kagurazaka.rxproperty.NoParameter;
 import jp.keita.kagurazaka.rxproperty.sample.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,8 +23,8 @@ public class MainActivity extends AppCompatActivity {
 
         // You can bind trigger observable instead of using "rxCommandOnClick" on layout xml.
         final Button goToTodoButton = binding.buttonGoToTodo;
-        final Subject<Nothing> emitter = PublishSubject.create();
-        goToTodoButton.setOnClickListener(view -> emitter.onNext(Nothing.INSTANCE));
+        final Subject<NoParameter> emitter = PublishSubject.create();
+        goToTodoButton.setOnClickListener(view -> emitter.onNext(NoParameter.INSTANCE));
         viewModel.goToTodoCommand.bindTrigger(emitter);
         viewModel.goToTodoCommand.setCancellable(() -> goToTodoButton.setOnClickListener(null));
 

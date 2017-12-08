@@ -3,10 +3,10 @@ package jp.keita.kagurazaka.rxproperty.sample.todo
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
-import jp.keita.kagurazaka.rxproperty.Nothing
+import jp.keita.kagurazaka.rxproperty.NoParameter
 
 object TodoRepository {
-    val onChanged: Observable<Nothing>
+    val onChanged: Observable<NoParameter>
         get() = changeEmitter.observeOn(AndroidSchedulers.mainThread())
 
     val all: List<TodoItem>
@@ -19,28 +19,28 @@ object TodoRepository {
         get() = list.filter { it.isDone }
 
     private val list = arrayListOf<TodoItem>()
-    private val changeEmitter = PublishSubject.create<Nothing>().toSerialized()
+    private val changeEmitter = PublishSubject.create<NoParameter>().toSerialized()
 
     fun store(item: TodoItem) {
         list.add(item)
-        changeEmitter.onNext(Nothing.INSTANCE)
+        changeEmitter.onNext(NoParameter.INSTANCE)
     }
 
     fun update(item: TodoItem) {
         val index = list.indexOf(item)
         if (index >= 0) {
             list[index] = item
-            changeEmitter.onNext(Nothing.INSTANCE)
+            changeEmitter.onNext(NoParameter.INSTANCE)
         }
     }
 
     fun deleteDone() {
         list.removeAll { it.isDone }
-        changeEmitter.onNext(Nothing.INSTANCE)
+        changeEmitter.onNext(NoParameter.INSTANCE)
     }
 
     fun clear() {
         list.clear()
-        changeEmitter.onNext(Nothing.INSTANCE)
+        changeEmitter.onNext(NoParameter.INSTANCE)
     }
 }

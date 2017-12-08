@@ -15,10 +15,10 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.k-kagurazaka.rx-property-android:rx-property:3.1.0'
+    compile 'com.github.k-kagurazaka.rx-property-android:rx-property:4.0.0'
 
     // If you want to use Kotlin syntax
-    compile 'com.github.k-kagurazaka.rx-property-android:rx-property-kotlin:3.1.0'
+    compile 'com.github.k-kagurazaka.rx-property-android:rx-property-kotlin:4.0.0'
 }
 ```
 
